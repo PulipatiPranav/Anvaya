@@ -21,12 +21,17 @@ model = AutoModelForImageClassification.from_pretrained(model_name, use_auth_tok
 app = FastAPI()
 
 # Allow CORS for frontend
+import os as _os
+_allowed_origins = _os.getenv(
+    "FASTAPI_CORS_ORIGINS",
+    "http://localhost:3000,http://localhost:4000"
+).split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Or specify your frontend domain
+    allow_origins=_allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["POST", "GET"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 @app.get("/")

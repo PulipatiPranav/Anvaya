@@ -1,13 +1,32 @@
+/**
+ * /api/confusable-letter
+ *
+ * GET  /content   — Game content (public — needed before login for game setup)
+ * GET  /summary   — Aggregated pair accuracy
+ * POST /          — Save session
+ * GET  /          — Fetch sessions by username
+ *
+ * Security: POST and GET / and GET /summary require auth. GET /content is public.
+ * Children restricted to own username.
+ */
 import express from 'express';
 import ConfusableContent from '../models/ConfusableContent.js';
 import ConfusableSession from '../models/ConfusableSession.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// GET /api/confusable-letter/summary?username= — must come before GET /
-router.get('/summary', async (req, res) => {
-  const { username } = req.query;
-  if (!username) return res.status(400).json({ error: 'username required' });
+function resolveUsername(req, res) {
+  if (req.user.role === 'child') return req.user.username;
+  const u = req.query.username || req.body.username;
+  if (!u) { res.status(400).json({ error: 'username required' }); return null; }
+  return u;
+}
+
+// GET /api/confusable-letter/summary?username= — must be before GET /
+router.get('/summary', requireAuth, async (req, res) => {
+  const username = resolveUsername(req, res);
+  if (!username) return;
   try {
     const sessions = await ConfusableSession.find({ username });
     if (!sessions.length) return res.json({ sessions: 0, avgAccuracy: 0, pairAccuracy: {} });
@@ -36,7 +55,7 @@ router.get('/summary', async (req, res) => {
   }
 });
 
-// GET /api/confusable-letter/content?pair=bd&type=letter_id&difficulty=easy
+// GET /api/confusable-letter/content?pair=bd&type=letter_id&difficulty=easy — public
 router.get('/content', async (req, res) => {
   const { pair, type, difficulty } = req.query;
   const filter = {};
@@ -52,9 +71,10 @@ router.get('/content', async (req, res) => {
 });
 
 // POST /api/confusable-letter — save session
-router.post('/', async (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   try {
-    const session = new ConfusableSession(req.body);
+    const data = { ...req.body, username: req.user.username };
+    const session = new ConfusableSession(data);
     await session.save();
     res.status(201).json(session);
   } catch (err) {
@@ -63,9 +83,9 @@ router.post('/', async (req, res) => {
 });
 
 // GET /api/confusable-letter?username=
-router.get('/', async (req, res) => {
-  const { username } = req.query;
-  if (!username) return res.status(400).json({ error: 'username required' });
+router.get('/', requireAuth, async (req, res) => {
+  const username = resolveUsername(req, res);
+  if (!username) return;
   try {
     const sessions = await ConfusableSession.find({ username }).sort({ createdAt: -1 }).limit(20);
     res.json(sessions);

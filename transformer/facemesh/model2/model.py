@@ -70,7 +70,13 @@ CONF_THRESHOLD = 0.55  # matches frontend Phase A default
 
 # ── Flask app ──────────────────────────────────────────────────────────────────
 app = Flask(__name__)
-CORS(app)
+
+import os as _os
+_allowed_origins = _os.getenv(
+    "FLASK_CORS_ORIGINS",
+    "http://localhost:4000,http://127.0.0.1:4000"
+).split(",")
+CORS(app, origins=_allowed_origins)
 
 
 @app.route("/health", methods=["GET"])
@@ -108,8 +114,10 @@ def calibrate():
     """
     Runtime temperature update — no restart required.
     Body: { "temperature": 1.5 }
-    Allows therapists/engineers to tune confidence calibration live.
+    Restricted to loopback (127.0.0.1) — admin-only, no public auth flow.
     """
+    if request.remote_addr not in ("127.0.0.1", "::1"):
+        return jsonify({"error": "Forbidden"}), 403
     global TEMPERATURE
     data = request.json or {}
     T = data.get("temperature")

@@ -21,8 +21,9 @@ function LoginPage() {
         password,
       });
 
+      const { role, therapistId, token } = response.data;
       localStorage.setItem("username", username);
-      const { role, therapistId } = response.data;
+      if (token) localStorage.setItem("token", token);
 
       if (role === "therapist") {
         localStorage.setItem("therapistId", therapistId);

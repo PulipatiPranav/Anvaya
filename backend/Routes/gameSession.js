@@ -1,82 +1,87 @@
+/**
+ * /api/sessions
+ *
+ * POST / — Save a completed game session
+ * GET  / — Fetch sessions (child: own only; therapist: by username query)
+ *
+ * Security:
+ *  • requireAuth on all endpoints
+ *  • POST: username is taken from JWT — body username is ignored
+ *  • GET:  children are restricted to their own username
+ *  • Removed PII console.log of request body
+ */
 import express from 'express';
 import mongoose from 'mongoose';
+import { requireAuth, requireRole } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Expression subdocument schema
 const expressionSchema = new mongoose.Schema({
   expression: { type: String, required: true },
-  timestamp: { type: Date, required: true },
+  timestamp:  { type: Date,   required: true },
 });
 
-// Game session schema
 const gameSessionSchema = new mongoose.Schema({
-    username:   { type: String, required: true },
-    difficulty: { type: String, enum: ['easy', 'medium', 'hard'], required: true },
-    startTime:  { type: Date, required: true },
-    endTime:    { type: Date, required: true },
-    gameName:   { type: String, required: true },
-    expressions: [expressionSchema],
-    score:      { type: Number, required: true },
-    // Child's self-reported mood from the WelcomeScreen mood check-in.
-    // Optional — older sessions without this field remain valid.
-    moodAtStart:  { type: String, default: null },
-    // Phonics level being practiced when the session was played.
-    // Set only for games that have a level selector (e.g. LetterBridge).
-    phonicsLevel: { type: String, default: null },
-  });
-  
-// Use existing model if already defined (for hot reload compatibility)
+  username:     { type: String, required: true },
+  difficulty:   { type: String, enum: ['easy', 'medium', 'hard'], required: true },
+  startTime:    { type: Date,   required: true },
+  endTime:      { type: Date,   required: true },
+  gameName:     { type: String, required: true },
+  expressions:  [expressionSchema],
+  score:        { type: Number, required: true },
+  moodAtStart:  { type: String, default: null },
+  phonicsLevel: { type: String, default: null },
+});
+
 const GameSession = mongoose.models.GameSession || mongoose.model('GameSession', gameSessionSchema);
 
-// POST: Save a new session
-router.post('/', async (req, res) => {
+// POST /api/sessions — save a new session
+router.post('/', requireAuth, async (req, res) => {
   try {
-    console.log("✅ Incoming POST /api/sessions");
-    console.log("📦 Payload:", req.body);
+    const { difficulty, startTime, endTime, expressions, gameName, score, moodAtStart, phonicsLevel } = req.body;
 
-    const { username, difficulty, startTime, endTime, expressions, gameName, score, moodAtStart, phonicsLevel } = req.body;
+    // Username always comes from the authenticated JWT — never trust body
+    const username = req.user.username;
 
     const session = new GameSession({
-        username,
-        difficulty,
-        startTime,
-        endTime,
-        expressions,
-        gameName,
-        score,
-        moodAtStart:  moodAtStart  || null,
-        phonicsLevel: phonicsLevel || null,
+      username,
+      difficulty,
+      startTime,
+      endTime,
+      expressions,
+      gameName,
+      score,
+      moodAtStart:  moodAtStart  || null,
+      phonicsLevel: phonicsLevel || null,
     });
 
     await session.save();
-
-    console.log("✅ Session saved successfully");
     res.status(201).json({ message: 'Session saved successfully' });
-
   } catch (err) {
     if (err.name === 'ValidationError') {
-      console.error("❌ Mongoose Validation Error:", err.errors);
-    } else {
-      console.error("❌ Unexpected Error:", err);
+      return res.status(400).json({ error: 'Invalid session data', details: Object.keys(err.errors) });
     }
+    console.error('[sessions] Save error:', err.message);
     res.status(500).json({ error: 'Failed to save session' });
   }
 });
 
-// GET: Fetch sessions by username
-router.get('/', async (req, res) => {
+// GET /api/sessions?username= — fetch sessions
+router.get('/', requireAuth, async (req, res) => {
   try {
-    const { username } = req.query;
+    let { username } = req.query;
 
-    if (!username) {
-      return res.status(400).json({ error: 'Username is required' });
+    if (req.user.role === 'child') {
+      // Children can only see their own sessions
+      username = req.user.username;
+    } else if (!username) {
+      return res.status(400).json({ error: 'username query parameter is required' });
     }
 
-    const sessions = await GameSession.find({ username });
+    const sessions = await GameSession.find({ username }).sort({ createdAt: -1 });
     res.json(sessions);
   } catch (err) {
-    console.error("❌ Failed to fetch sessions:", err);
+    console.error('[sessions] Fetch error:', err.message);
     res.status(500).json({ error: 'Failed to fetch sessions' });
   }
 });
