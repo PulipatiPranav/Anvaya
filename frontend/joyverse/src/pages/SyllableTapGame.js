@@ -4,6 +4,7 @@ import './SyllableTapGame.css';
 import useEmotionDetection from "../hooks/useEmotionDetection";
 import useGameSessionLogger from "../hooks/useGameSessionLogger";
 import TTSButton from "../components/TTSButton";
+import { API_BASE } from '../config/api';
 // const hardcodedWords = {
 //   easy: [
 //     { word: 'cat', syllables: 1, split: ['cat'] },
@@ -47,7 +48,7 @@ useEffect(() => {
 
   const fetchWords = async (level) => {
     try {
-      const res = await axios.get(`http://localhost:4000/api/syllable-game/${level}`);
+      const res = await axios.get(`${API_BASE}/api/syllable-game/${level}`);
       const words = res.data;
       setDifficulty(level);
       setUsedWords([]);

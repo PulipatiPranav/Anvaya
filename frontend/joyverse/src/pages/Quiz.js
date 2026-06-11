@@ -15,7 +15,7 @@
 //   useEffect(() => {
 //     const fetchQuestions = async () => {
 //       try {
-//         const response = await axios.get(`http://localhost:4000/api/questions?difficulty=${difficulty}`);
+//         const response = await axios.get(`${API_BASE}/api/questions?difficulty=${difficulty}`);
 //         setQuestions(response.data);
 //         setCurrentQuestion(0);
 //         setScore(0);
@@ -126,6 +126,7 @@ import useGameSessionLogger from "../hooks/useGameSessionLogger";
 import TTSButton from "../components/TTSButton";
 import "./Quiz.css";
 
+import { API_BASE } from '../config/api';
 const emotionToDifficulty = {
   Happy: "Hard",
   Sad: "Easy",
@@ -148,7 +149,7 @@ const Quiz = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await axios.get(`http://localhost:4000/api/questions?difficulty=${difficulty}`);
+        const response = await axios.get(`${API_BASE}/api/questions?difficulty=${difficulty}`);
         setQuestions(response.data);
         setCurrentQuestion(0);
         setScore(0);

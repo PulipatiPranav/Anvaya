@@ -6,6 +6,7 @@ import useGameSessionLogger from '../hooks/useGameSessionLogger';
 import SpeechService from '../services/SpeechService';
 import axios from 'axios';
 
+import { API_BASE } from '../config/api';
 const QUESTIONS_PER_ROUND = 10;
 const PAIR_LABELS = { bd: 'b / d', pq: 'p / q', mw: 'm / w', nu: 'n / u' };
 const PAIR_COLORS = {
@@ -53,7 +54,7 @@ export default function ConfusableLetterGame() {
     try {
       const params = new URLSearchParams({ difficulty: diff });
       if (pair !== 'all') params.set('pair', pair);
-      const res = await fetch(`http://localhost:4000/api/confusable-letter/content?${params}`);
+      const res = await fetch(`${API_BASE}/api/confusable-letter/content?${params}`);
       if (!res.ok) throw new Error('fetch failed');
       const raw = await res.json();
 

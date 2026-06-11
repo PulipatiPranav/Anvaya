@@ -6,6 +6,7 @@ import useGameSessionLogger from '../hooks/useGameSessionLogger';
 import SpeechService from '../services/SpeechService';
 import axios from 'axios';
 
+import { API_BASE } from '../config/api';
 // ── Content pools (no database needed — client-side generation) ────────────
 const ITEM_POOLS = {
   words: {
@@ -198,7 +199,7 @@ export default function VerbalMemoryGame() {
     const wms    = computeWorkingMemoryScore(maxLen, overallAccuracy);
     const moodAtStart = localStorage.getItem('selectedEmotion') || 'neutral';
 
-    axios.post('http://localhost:4000/api/verbal-memory', {
+    axios.post(`${API_BASE}/api/verbal-memory`, {
       username,
       difficulty,
       mode,

@@ -67,19 +67,21 @@ function Games() {
           <p className="games-page-subtitle">Select a game and start your adventure!</p>
         </section>
 
-        <div className="games-page-list">
+        <div className="games-page-list" role="list">
           {ACTIVE_GAMES.map(game => (
-            <div
+            <button
               key={game.key}
+              role="listitem"
               className={`games-page-card ${game.cssClass}`}
               onClick={() => navigate(game.route)}
+              aria-label={`Play ${game.label}`}
             >
               {game.image
-                ? <img src={game.image} alt={game.alt} className="game-icon" />
-                : <span className="game-icon-emoji" role="img" aria-label={game.alt}>{game.emoji}</span>
+                ? <img src={game.image} alt="" className="game-icon" />
+                : <span className="game-icon-emoji" aria-hidden="true">{game.emoji}</span>
               }
               <h2>{game.label}</h2>
-            </div>
+            </button>
           ))}
         </div>
       </div>

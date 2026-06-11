@@ -2,6 +2,26 @@
    %PUBLIC_URL% so that CRA's webpack does not attempt to resolve it
    as a module path at build time. */
 
+/* ── Skip-to-content link (accessibility) ──────────────────────────────────── */
+.skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: var(--brand-primary);
+  color: var(--text-inverse);
+  padding: var(--space-3) var(--space-6);
+  border-radius: 0 0 var(--radius-md) 0;
+  font-family: var(--font-opendyslexic);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  text-decoration: none;
+  z-index: 9999;
+  transition: top var(--transition-fast);
+}
+.skip-to-content:focus {
+  top: 0;
+}
+
 html,
 body {
   margin: 0;
@@ -17,7 +37,15 @@ body {
   transition: background-color 0.6s ease;
 }
 
+/* ── Global focus style — visible for keyboard users ───────────────────────── */
+:focus-visible {
+  outline: 3px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
 :root {
+  /* ── Primitive palette ──────────────────────────────────────────────────── */
   --color-lightpink: #f7a0a0;
   --color-royalblue: #7981fa;
   --color-khaki: #f8f09f;
@@ -35,26 +63,228 @@ body {
   --color-snow: #fffbfb;
   --color-gainsboro: #dadada;
 
-  --gap-16: 21px;
+  /* ── Semantic tokens ────────────────────────────────────────────────────── */
 
+  /* Surfaces */
+  --surface-page:    #fefee7;
+  --surface-card:    #ffffff;
+  --surface-subtle:  #f7fafc;
+  --surface-overlay: rgba(0, 0, 0, 0.45);
+
+  /* Text */
+  --text-primary:   #1a202c;
+  --text-secondary: #4a5568;
+  --text-muted:     #718096;
+  --text-inverse:   #ffffff;
+  --text-link:      #4361ee;
+
+  /* Brand / interactive */
+  --brand-primary:      #4361ee;
+  --brand-primary-dark: #2d47c9;
+  --brand-accent:       #f97316;
+  --brand-accent-dark:  #ea6b0a;
+
+  /* Status */
+  --status-success:    #38a169;
+  --status-success-bg: #f0fff4;
+  --status-warning:    #d97706;
+  --status-warning-bg: #fffbeb;
+  --status-error:      #e53e3e;
+  --status-error-bg:   #fff5f5;
+  --status-info:       #3182ce;
+  --status-info-bg:    #ebf8ff;
+
+  /* Borders */
+  --border-subtle:  #e2e8f0;
+  --border-default: #cbd5e0;
+  --border-strong:  #a0aec0;
+  --border-focus:   #4361ee;
+
+  /* Shadows */
+  --shadow-sm:     0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md:     0 4px 12px rgba(0, 0, 0, 0.10);
+  --shadow-lg:     0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-card:   0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-button: 0 4px 6px rgba(67, 97, 238, 0.25);
+
+  /* Radius */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-pill: 9999px;
+
+  /* Spacing scale */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ── Legacy spacing tokens (kept for back-compat) ───────────────────────── */
+  --gap-16:     21px;
   --padding-10: 13px;
   --padding-12: 16px;
   --padding-14: 18px;
   --padding-20: 26px;
+  --br-30:      39px;
+  --br-60:      78px;
 
-  --br-30: 39px;
-  --br-60: 78px;
-
-  /* --font-opendyslexic now references --a11y-font so all existing
-     font-family: var(--font-opendyslexic) declarations respond to
-     the accessibility system without touching each component's CSS */
-  --a11y-font: OpenDyslexic, sans-serif;
-  --a11y-font-size: 1rem;
+  /* ── Typography ─────────────────────────────────────────────────────────── */
+  --a11y-font:           OpenDyslexic, sans-serif;
+  --a11y-font-size:      1rem;
   --a11y-letter-spacing: normal;
-  --a11y-line-height: 1.5;
-  --font-opendyslexic: var(--a11y-font);
+  --a11y-line-height:    1.5;
+  --font-opendyslexic:   var(--a11y-font);
 
+  --font-size-sm:   0.875rem;
+  --font-size-base: 1rem;
+  --font-size-md:   1.125rem;
+  --font-size-lg:   1.25rem;
+  --font-size-xl:   1.5rem;
+  --font-size-2xl:  1.875rem;
+  --font-size-3xl:  2.25rem;
+
+  /* Legacy font-size tokens */
   --font-size-19: 25px;
   --font-size-24: 31px;
   --font-size-32: 42px;
+
+  /* ── Transitions ────────────────────────────────────────────────────────── */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.2s ease;
+  --transition-slow: 0.3s ease;
+}
+
+/* ── Shared loading / error / empty state utilities ────────────────────────── */
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-12) var(--space-6);
+  color: var(--text-secondary);
+  font-family: var(--font-opendyslexic);
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border-subtle);
+  border-top-color: var(--brand-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-banner {
+  background: var(--status-error-bg);
+  border: 1px solid var(--status-error);
+  border-radius: var(--radius-md);
+  color: var(--status-error);
+  padding: var(--space-4) var(--space-5);
+  font-family: var(--font-opendyslexic);
+  font-size: var(--font-size-base);
+  text-align: center;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-12) var(--space-6);
+  color: var(--text-muted);
+  font-family: var(--font-opendyslexic);
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  opacity: 0.5;
+}
+
+/* ── Shared card component ──────────────────────────────────────────────────── */
+.card {
+  background: var(--surface-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-6);
+}
+
+/* ── Shared badge ───────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  font-family: var(--font-opendyslexic);
+}
+
+.badge-success { background: var(--status-success-bg); color: var(--status-success); }
+.badge-warning { background: var(--status-warning-bg); color: var(--status-warning); }
+.badge-error   { background: var(--status-error-bg);   color: var(--status-error);   }
+.badge-info    { background: var(--status-info-bg);    color: var(--status-info);    }
+
+/* ── Shared button primitives ───────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: var(--font-opendyslexic);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  text-decoration: none;
+  transition: filter var(--transition-base), box-shadow var(--transition-base), transform var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+  background: var(--brand-primary);
+  color: var(--text-inverse);
+  box-shadow: var(--shadow-button);
+}
+.btn-primary:hover { filter: brightness(1.1); }
+
+.btn-secondary {
+  background: var(--surface-subtle);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+}
+.btn-secondary:hover { background: var(--border-subtle); }
+
+.btn-danger {
+  background: var(--status-error-bg);
+  color: var(--status-error);
+  border: 1px solid var(--status-error);
+}
+.btn-danger:hover { filter: brightness(0.95); }
+
+.btn-sm { padding: var(--space-2) var(--space-3); font-size: var(--font-size-sm); }
+.btn-lg { padding: var(--space-4) var(--space-8); font-size: var(--font-size-lg); }
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }

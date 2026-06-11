@@ -20,6 +20,7 @@ import LetterSoundGame         from "./pages/LetterSoundGame";
 import ConfusableLetterGame    from "./pages/ConfusableLetterGame";
 import RANGame                 from "./pages/RANGame";
 import VerbalMemoryGame        from "./pages/VerbalMemoryGame";
+import ReportPage              from "./pages/ReportPage";
 
 /** Floating accessibility button — inside provider so it can read context. */
 function AccessibilityFAB() {
@@ -59,8 +60,24 @@ function App() {
           <Route path="/ran"                 element={<RANGame />} />
           <Route path="/verbalmemory"        element={<VerbalMemoryGame />} />
           <Route path="/therapistdashboard"  element={<TherapistDashboard />} />
+          <Route path="/report/:childUsername" element={<ReportPage />} />
           <Route path="/superadmin"          element={<SuperAdminDashboard />} />
-          <Route path="*"                    element={<h1>Page Not Found</h1>} />
+          <Route path="*"                    element={
+            <div style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              justifyContent: 'center', minHeight: '100vh', gap: '24px',
+              fontFamily: 'var(--font-opendyslexic)', textAlign: 'center', padding: '24px',
+            }}>
+              <span style={{ fontSize: '4rem' }} aria-hidden="true">🗺️</span>
+              <h1 style={{ fontSize: '2rem', margin: 0, color: 'var(--text-primary)' }}>Page not found</h1>
+              <p style={{ color: 'var(--text-secondary)', margin: 0 }}>This page doesn't exist. Let's go somewhere fun!</p>
+              <a href="/loginpage" style={{
+                background: 'var(--brand-primary)', color: '#fff',
+                padding: '12px 28px', borderRadius: 'var(--radius-md)',
+                fontWeight: 700, textDecoration: 'none',
+              }}>Go to Login</a>
+            </div>
+          } />
         </Routes>
 
         {/* Global accessibility modal + FAB rendered on every route */}

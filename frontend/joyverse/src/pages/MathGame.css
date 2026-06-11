@@ -1,7 +1,7 @@
 .math-game-container {
   text-align: center;
   padding: 20px;
-  font-family: 'Comic Sans MS', cursive, sans-serif;
+  font-family: var(--font-opendyslexic);
   min-height: 100vh;
   color: #333;
   background: rgba(255, 255, 255, 0.8);

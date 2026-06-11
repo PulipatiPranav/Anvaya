@@ -4,6 +4,7 @@ import './RANGame.css';
 import useEmotionDetection from '../hooks/useEmotionDetection';
 import useGameSessionLogger from '../hooks/useGameSessionLogger';
 import axios from 'axios';
+import { API_BASE } from '../config/api';
 
 // ── Content pools ─────────────────────────────────────────────────────────
 const POOLS = {
@@ -160,7 +161,7 @@ export default function RANGame() {
       : 0;
     const moodAtStart = localStorage.getItem('selectedEmotion') || 'neutral';
 
-    axios.post('http://localhost:4000/api/ran', {
+    axios.post(`${API_BASE}/api/ran`, {
       username,
       category,
       difficulty,

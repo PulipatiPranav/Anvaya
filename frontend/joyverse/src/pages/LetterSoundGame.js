@@ -6,6 +6,7 @@ import useGameSessionLogger from '../hooks/useGameSessionLogger';
 import SpeechService from '../services/SpeechService';
 import { PHONICS_LEVEL_ORDER, PhonicsLevelMeta } from '../constants/PhonicsLevel';
 import axios from 'axios';
+import { API_BASE } from '../config/api';
 
 const QUESTIONS_PER_ROUND = 8;
 
@@ -38,7 +39,7 @@ export default function LetterSoundGame() {
     setLoadError('');
     try {
       const params = new URLSearchParams({ level, gameType: 'letter_sound', difficulty: diff });
-      const res = await fetch(`http://localhost:4000/api/phonics?${params}`);
+      const res = await fetch(`${API_BASE}/api/phonics?${params}`);
       if (!res.ok) throw new Error('fetch failed');
       const raw = await res.json();
 

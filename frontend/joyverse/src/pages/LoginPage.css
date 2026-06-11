@@ -46,11 +46,22 @@
   box-shadow: 0 5px 4px #7e7e7e;
 }
 
+.login-label {
+  display: block;
+  width: 100%;
+  font-family: var(--font-opendyslexic);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin-bottom: 0.25rem;
+  text-align: left;
+}
+
 .usernamecontainer,
 .passwordcontainer {
   width: 100%;
   padding: 0.75rem 1.5rem;
-  border: none;
+  border: 2px solid transparent;
   outline: none;
   border-radius: var(--br-30);
   background-color: var(--color-snow);
@@ -59,6 +70,18 @@
   color: var(--color-black);
   box-sizing: border-box;
   box-shadow: 0 5px 4px #7e7e7e;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.usernamecontainer:focus,
+.passwordcontainer:focus {
+  border-color: var(--brand-primary, #4361ee);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.25);
+}
+
+.usernamecontainer[aria-invalid="true"],
+.passwordcontainer[aria-invalid="true"] {
+  border-color: var(--status-error, #e53e3e);
 }
 
 .passwordcontainer {

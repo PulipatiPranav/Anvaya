@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import axios from 'axios';
+import { API_BASE } from '../config/api';
 
 export function useAdaptationLogger(gameKey) {
   const username = localStorage.getItem('username');
@@ -14,7 +15,7 @@ export function useAdaptationLogger(gameKey) {
   } = {}) => {
     if (!username) return;
     try {
-      await axios.post('http://localhost:4000/api/adaptation-log', {
+      await axios.post(`${API_BASE}/api/adaptation-log`, {
         username,
         gameKey,
         emotionDetected,

@@ -4,6 +4,7 @@ import "./WordPuzzleAdventure.css";
 import useEmotionDetection from "../hooks/useEmotionDetection";
 import useGameSessionLogger from "../hooks/useGameSessionLogger";
 import TTSButton from "../components/TTSButton";
+import { API_BASE } from '../config/api';
 const WordPuzzleAdventure = () => {
   const { emotion, videoRef, canvasRef } = useEmotionDetection();
   const [difficulty, setDifficulty] = useState("easy");
@@ -46,7 +47,7 @@ const WordPuzzleAdventure = () => {
 
   const fetchQuestions = async (level) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/wordQuestions/${level}`);
+      const response = await fetch(`${API_BASE}/api/wordQuestions/${level}`);
       const data = await response.json();
       if (data.length === 0) {
         alert("No questions found for this difficulty!");

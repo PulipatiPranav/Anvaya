@@ -2,17 +2,21 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./LoginPage.css";
 import { useNavigate } from "react-router-dom";
+import { API_BASE } from "../config/api";
 
 function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
     try {
-      const response = await axios.post("http://localhost:4000/api/auth/login", {
+      const response = await axios.post(`${API_BASE}/api/auth/login`, {
         username,
         password,
       });
@@ -28,47 +32,88 @@ function LoginPage() {
       } else if (role === "child") {
         navigate("/welcomepage");
       } else {
-        setError("Unknown user role");
+        setError("Unknown user role. Please contact your administrator.");
       }
     } catch (err) {
-      setError("Invalid username or password");
+      if (err.response?.status === 401) {
+        setError("Incorrect username or password. Please try again.");
+      } else if (!err.response) {
+        setError("Cannot connect to server. Please check your connection.");
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  return React.createElement(
-    "div",
-    { className: "loginscreen" },
-    React.createElement(
-      "section",
-      { className: "joyverse-wrapper" },
-      React.createElement("h1", { className: "joyverse" }, "JoyVerse")
-    ),
-    React.createElement(
-      "form",
-      { className: "usernamecontainer-parent", onSubmit: handleLogin },
-      React.createElement("input", {
-        className: "usernamecontainer",
-        placeholder: "username",
-        type: "text",
-        value: username,
-        onChange: (e) => setUsername(e.target.value),
-        required: true,
-      }),
-      React.createElement("input", {
-        className: "passwordcontainer",
-        placeholder: "password",
-        type: "password",
-        value: password,
-        onChange: (e) => setPassword(e.target.value),
-        required: true,
-      }),
-      React.createElement(
-        "button",
-        { className: "login-button", type: "submit" },
-        React.createElement("div", { className: "login" }, "login")
-      )
-    ),
-    error && React.createElement("p", { className: "error" }, error)
+  const errorId = "login-error";
+
+  return (
+    <div className="loginscreen">
+      <a href="#login-form" className="skip-to-content">Skip to login form</a>
+
+      <section className="joyverse-wrapper" aria-label="JoyVerse branding">
+        <h1 className="joyverse">JoyVerse</h1>
+      </section>
+
+      <form
+        id="login-form"
+        className="usernamecontainer-parent"
+        onSubmit={handleLogin}
+        aria-label="Sign in to JoyVerse"
+        aria-describedby={error ? errorId : undefined}
+        noValidate
+      >
+        <label className="login-label" htmlFor="login-username">
+          Username
+        </label>
+        <input
+          id="login-username"
+          className="usernamecontainer"
+          placeholder="Enter your username"
+          type="text"
+          autoComplete="username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+          aria-required="true"
+          aria-invalid={!!error}
+          aria-describedby={error ? errorId : undefined}
+        />
+
+        <label className="login-label" htmlFor="login-password">
+          Password
+        </label>
+        <input
+          id="login-password"
+          className="passwordcontainer"
+          placeholder="Enter your password"
+          type="password"
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          aria-required="true"
+          aria-invalid={!!error}
+        />
+
+        <button
+          className="login-button"
+          type="submit"
+          disabled={loading}
+          aria-busy={loading}
+        >
+          <span className="login">{loading ? "Signing in…" : "Login"}</span>
+        </button>
+      </form>
+
+      {error && (
+        <p id={errorId} className="error" role="alert" aria-live="assertive">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }
 

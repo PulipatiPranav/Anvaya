@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import axios from "axios";
+import { API_BASE } from "../config/api";
 
 /**
  * useGameSessionLogger
@@ -46,7 +47,7 @@ const useGameSessionLogger = ({ username, difficulty, expression, score, phonics
     };
 
     try {
-      await axios.post("http://localhost:4000/api/sessions", sessionData);
+      await axios.post(`${API_BASE}/api/sessions`, sessionData);
       console.log("Game session saved!");
     } catch (err) {
       console.error("Failed to save session:", err);

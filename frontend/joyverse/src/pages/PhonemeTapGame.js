@@ -8,6 +8,7 @@ import SpeechService from '../services/SpeechService';
 import PhonicsContentService from '../services/PhonicsContentService';
 import { PHONICS_LEVEL_ORDER, PhonicsLevelMeta } from '../constants/PhonicsLevel';
 import axios from 'axios';
+import { API_BASE } from '../config/api';
 
 const WORDS_PER_ROUND = 8;
 
@@ -45,7 +46,7 @@ export default function PhonemeTapGame() {
       // via the phoneme_tap gameType
       const raw = await (async () => {
         const params = new URLSearchParams({ level, gameType: 'phoneme_tap', difficulty: diff });
-        const res = await fetch(`http://localhost:4000/api/phonics?${params}`);
+        const res = await fetch(`${API_BASE}/api/phonics?${params}`);
         if (!res.ok) throw new Error('fetch failed');
         return res.json();
       })();

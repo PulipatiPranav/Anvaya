@@ -1,9 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import ReactApexChart from 'react-apexcharts';
 import './TherapistDashboard.css';
 import EmotionBarChart from '../components/EmotionBarChart';
 import EmotionPercentageList from '../components/EmotionPercentageList';
+import { LoadingState, ErrorBanner, EmptyState } from '../components/LoadingState';
+import { API_BASE } from '../config/api';
+
+const READING_LEVELS = ['pre-reader', 'CVC', 'Blends', 'Digraphs', 'VowelPatterns'];
+const ASSIGNABLE_GAMES = [
+  { key: 'phonemetap',       label: 'Phoneme Tap' },
+  { key: 'lettersound',      label: 'Letter Sound Match' },
+  { key: 'confusableletter', label: 'Letter Trainer' },
+  { key: 'ran',              label: 'Rapid Naming' },
+  { key: 'verbalmemory',     label: 'Sequence Memory' },
+];
 
 
 const EmotionTimelineChart = ({ expressions }) => {
@@ -47,6 +59,7 @@ const EmotionTimelineChart = ({ expressions }) => {
 
 const TherapistDashboard = () => {
   const [children, setChildren] = useState([]);
+  const [childrenLoading, setChildrenLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddChildForm, setShowAddChildForm] = useState(false);
   const [child, setChild] = useState({ name: '', username: '', password: '' });
@@ -61,8 +74,23 @@ const TherapistDashboard = () => {
   const [ranSessions,            setRANSessions]            = useState([]);
   const [verbalMemorySessions,   setVerbalMemorySessions]   = useState([]);
   const [selectedUsername,       setSelectedUsername]       = useState('');
+  const [analyticsData,          setAnalyticsData]          = useState(null);
+  const [readingProgress,        setReadingProgress]        = useState(null);
+  const [adaptationLogs,         setAdaptationLogs]         = useState([]);
+  const [assignSessionChild,     setAssignSessionChild]     = useState(null);
+  const [assignForm,             setAssignForm]             = useState({
+    date: new Date().toISOString().slice(0, 10),
+    selectedGames: [],
+    instructions: '',
+  });
+  const [assignError,   setAssignError]   = useState('');
+  const [assignSuccess, setAssignSuccess] = useState('');
+  const [overrideLevel, setOverrideLevel] = useState('');
+  const [overrideNote,  setOverrideNote]  = useState('');
+  const [overrideMsg,   setOverrideMsg]   = useState('');
 
   const therapistId = localStorage.getItem("therapistId");
+  const navigate = useNavigate();
  useEffect(() => {
     // Enable scrolling when this page is open
     document.body.style.overflow = "auto";
@@ -75,16 +103,19 @@ const TherapistDashboard = () => {
   useEffect(() => {
     const fetchChildren = async () => {
       if (!therapistId) {
-        setError('Therapist ID is missing');
+        setError('Therapist ID is missing. Please log in again.');
+        setChildrenLoading(false);
         return;
       }
       try {
-        const response = await axios.get("http://localhost:4000/api/children", {
+        const response = await axios.get(`${API_BASE}/api/children`, {
           headers: { 'therapist-id': therapistId }
         });
         setChildren(response.data);
       } catch (err) {
-        setError('Failed to fetch children');
+        setError('Failed to fetch patient list. Please refresh the page.');
+      } finally {
+        setChildrenLoading(false);
       }
     };
 
@@ -97,12 +128,12 @@ const TherapistDashboard = () => {
     setSessionError('');
     try {
       const [sessionsRes, ptRes, lsRes, clRes, ranRes, vmRes] = await Promise.all([
-        axios.get(`http://localhost:4000/api/sessions?username=${username}`),
-        axios.get(`http://localhost:4000/api/phoneme-tap?username=${username}`),
-        axios.get(`http://localhost:4000/api/letter-sound?username=${username}`),
-        axios.get(`http://localhost:4000/api/confusable-letter?username=${username}`),
-        axios.get(`http://localhost:4000/api/ran?username=${username}`),
-        axios.get(`http://localhost:4000/api/verbal-memory?username=${username}`),
+        axios.get(`${API_BASE}/api/sessions?username=${username}`),
+        axios.get(`/api/phoneme-tap?username=${username}`),
+        axios.get(`/api/letter-sound?username=${username}`),
+        axios.get(`/api/confusable-letter?username=${username}`),
+        axios.get(`/api/ran?username=${username}`),
+        axios.get(`/api/verbal-memory?username=${username}`),
       ]);
       setSelectedChildSessions(sessionsRes.data);
       setPhonemeTapSessions(ptRes.data);
@@ -110,6 +141,21 @@ const TherapistDashboard = () => {
       setConfusableSessions(clRes.data);
       setRANSessions(ranRes.data);
       setVerbalMemorySessions(vmRes.data);
+
+      // Additional analytics + progression + adaptation
+      try {
+        const [analyticsRes, rpRes, alRes] = await Promise.all([
+          axios.get(`/api/analytics/${username}`),
+          axios.get(`/api/reading-progress/${username}`),
+          axios.get(`/api/adaptation-log?username=${username}&limit=20`),
+        ]);
+        setAnalyticsData(analyticsRes.data);
+        setReadingProgress(rpRes.data);
+        setAdaptationLogs(alRes.data);
+        setOverrideLevel(rpRes.data?.currentLevel || '');
+      } catch {
+        // non-critical — continue showing what we have
+      }
     } catch (err) {
       setSessionError('Failed to fetch game sessions');
     }
@@ -126,7 +172,7 @@ const TherapistDashboard = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:4000/api/children", {
+      const response = await axios.post(`${API_BASE}/api/children`, {
         ...child,
         therapistId,
       });
@@ -146,6 +192,70 @@ const TherapistDashboard = () => {
   }
   };
 
+  const handleAssignSession = async (e) => {
+    e.preventDefault();
+    setAssignError('');
+    setAssignSuccess('');
+    if (!assignForm.selectedGames.length) {
+      setAssignError('Select at least one game.');
+      return;
+    }
+    try {
+      const games = assignForm.selectedGames.map((key, idx) => ({
+        gameKey: key, order: idx + 1, difficulty: assignForm[`diff_${key}`] || 'medium',
+        durationMin: parseInt(assignForm[`dur_${key}`] || '10', 10),
+      }));
+      await axios.post('/api/assigned-sessions', {
+        therapistId,
+        childUsername: assignSessionChild,
+        date: assignForm.date,
+        games,
+        instructions: assignForm.instructions,
+      });
+      setAssignSuccess('Session assigned successfully!');
+      setTimeout(() => { setAssignSessionChild(null); setAssignSuccess(''); }, 2500);
+    } catch (err) {
+      setAssignError(err.response?.data?.message || 'Failed to assign session.');
+    }
+  };
+
+  const handleOverrideLevel = async (childUsername) => {
+    setOverrideMsg('');
+    if (!overrideLevel) return;
+    try {
+      await axios.patch(`/api/reading-progress/${childUsername}/override`, {
+        level: overrideLevel, therapistId, note: overrideNote,
+      });
+      const rpRes = await axios.get(`/api/reading-progress/${childUsername}`);
+      setReadingProgress(rpRes.data);
+      setOverrideMsg('Level updated.');
+    } catch (err) {
+      setOverrideMsg(err.response?.data?.message || 'Override failed.');
+    }
+  };
+
+  const handleCheckAdvancement = async (childUsername) => {
+    setOverrideMsg('');
+    try {
+      const res = await axios.post(`/api/reading-progress/${childUsername}/check`);
+      if (res.data.advanced) {
+        setOverrideMsg(`Advanced to ${res.data.newLevel}! (avg accuracy ${res.data.avgAccuracy}%)`);
+        const rpRes = await axios.get(`/api/reading-progress/${childUsername}`);
+        setReadingProgress(rpRes.data);
+      } else {
+        const reasons = {
+          insufficient_data: `Not enough data (${res.data.sessionsFound || 0} sessions found; need 3+)`,
+          below_threshold: `Below threshold — avg accuracy ${res.data.avgAccuracy}% (need 85%)`,
+          max_level: 'Already at highest level.',
+          therapist_override: 'Auto-advancement locked by therapist override.',
+        };
+        setOverrideMsg(reasons[res.data.reason] || 'No change.');
+      }
+    } catch (err) {
+      setOverrideMsg('Check failed.');
+    }
+  };
+
   const filteredChildren = children.filter(child =>
     (child.username && child.username.toLowerCase().includes(searchTerm.toLowerCase())) ||
     (child.name && child.name.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -157,8 +267,10 @@ const TherapistDashboard = () => {
 
       <input
         type="text"
-        placeholder="Search by Name or Username..."
+        placeholder="Search by name or username…"
         className="search-bar"
+        aria-label="Search patients by name or username"
+        value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
 
@@ -171,70 +283,203 @@ const TherapistDashboard = () => {
 
       {showAddChildForm && (
         <div className="add-child-form-container">
-          <h3>Add Child</h3>
-          <form className="add-child-form" onSubmit={handleAddChild}>
+          <h3 id="add-child-heading">Add Patient</h3>
+          <form className="add-child-form" onSubmit={handleAddChild} aria-labelledby="add-child-heading">
+            <label htmlFor="child-name" className="form-label">Full name</label>
             <input
+              id="child-name"
               type="text"
               name="name"
-              placeholder="Child's Name"
+              placeholder="e.g. Alex Johnson"
               className="form-input"
               value={child.name}
               onChange={(e) => setChild({ ...child, name: e.target.value })}
+              required
+              aria-required="true"
             />
+            <label htmlFor="child-username" className="form-label">Username</label>
             <input
+              id="child-username"
               type="text"
               name="username"
-              placeholder="Username"
+              placeholder="e.g. alex123"
               className="form-input"
               value={child.username}
               onChange={(e) => setChild({ ...child, username: e.target.value })}
+              required
+              aria-required="true"
+              autoComplete="off"
             />
+            <label htmlFor="child-password" className="form-label">Password</label>
             <input
+              id="child-password"
               type="password"
               name="password"
-              placeholder="Password"
+              placeholder="Set a password"
               className="form-input"
               value={child.password}
               onChange={(e) => setChild({ ...child, password: e.target.value })}
+              required
+              aria-required="true"
+              autoComplete="new-password"
             />
-            <button type="submit" className="submit-btn">Add Child</button>
+            <button type="submit" className="submit-btn">Add Patient</button>
           </form>
           {error && <p className="error-msg">{error}</p>}
           {successMessage && <p className="success-msg">{successMessage}</p>}
         </div>
       )}
 
-      <table className="custom-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Name</th>
-            <th>Username</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredChildren.map((child, index) => (
-            <tr key={child._id}>
-              <td>{index + 1}</td>
-              <td>{child.name}</td>
-              <td>{child.username}</td>
-              <td>
-                <button
-                  className="action-btn"
-                  onClick={() => handleViewDetails(child.username)}
-                >
-                  View Details
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {error && <ErrorBanner message={error} onDismiss={() => setError('')} />}
+
+      {childrenLoading ? (
+        <LoadingState label="Loading patients…" />
+      ) : (
+        <>
+          {filteredChildren.length === 0 ? (
+            searchTerm ? (
+              <EmptyState icon="🔍" title="No results" description={`No patients match "${searchTerm}"`} />
+            ) : (
+              <EmptyState
+                icon="👶"
+                title="No patients yet"
+                description="Add your first patient using the button above."
+              />
+            )
+          ) : (
+            <table className="custom-table" aria-label="Patient list">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Username</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredChildren.map((child, index) => (
+                  <tr key={child._id}>
+                    <td>{index + 1}</td>
+                    <td>{child.name}</td>
+                    <td>{child.username}</td>
+                    <td style={{ display: 'flex', gap: 6, flexWrap: 'wrap', padding: '8px 6px' }}>
+                      <button className="action-btn" onClick={() => handleViewDetails(child.username)}>
+                        View Details
+                      </button>
+                      <button
+                        className="action-btn"
+                        style={{ background: '#6366f1', color: '#fff' }}
+                        onClick={() => { setAssignSessionChild(child.username); setAssignError(''); setAssignSuccess(''); setAssignForm({ date: new Date().toISOString().slice(0,10), selectedGames: [], instructions: '' }); }}
+                      >
+                        Assign
+                      </button>
+                      <button
+                        className="action-btn"
+                        style={{ background: '#0f766e', color: '#fff' }}
+                        onClick={() => navigate(`/report/${child.username}`)}
+                      >
+                        Report
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </>
+      )}
+
+      {/* ── Assign Session Panel ─────────────────────────────────────────── */}
+      {assignSessionChild && (
+        <div style={{ background: '#f0f4ff', border: '2px solid #6366f1', borderRadius: 18, padding: '24px 28px', margin: '20px 0', maxWidth: 680 }}>
+          <h3 style={{ margin: '0 0 16px', color: '#312e81', fontSize: '1.1rem', fontWeight: 800 }}>
+            Assign Session — {assignSessionChild}
+          </h3>
+          <form onSubmit={handleAssignSession} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+              <label style={{ fontWeight: 700, fontSize: '0.9rem' }}>Date:</label>
+              <input
+                type="date"
+                value={assignForm.date}
+                onChange={e => setAssignForm(f => ({ ...f, date: e.target.value }))}
+                className="form-input"
+                style={{ width: 'auto' }}
+              />
+            </div>
+            <div>
+              <p style={{ fontWeight: 700, fontSize: '0.9rem', margin: '0 0 8px' }}>Games to include:</p>
+              {ASSIGNABLE_GAMES.map(g => (
+                <div key={g.key} style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8, flexWrap: 'wrap' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 180, cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={assignForm.selectedGames.includes(g.key)}
+                      onChange={e => setAssignForm(f => ({
+                        ...f,
+                        selectedGames: e.target.checked
+                          ? [...f.selectedGames, g.key]
+                          : f.selectedGames.filter(k => k !== g.key),
+                      }))}
+                    />
+                    <span style={{ fontWeight: 600 }}>{g.label}</span>
+                  </label>
+                  {assignForm.selectedGames.includes(g.key) && (
+                    <>
+                      <select
+                        value={assignForm[`diff_${g.key}`] || 'medium'}
+                        onChange={e => setAssignForm(f => ({ ...f, [`diff_${g.key}`]: e.target.value }))}
+                        style={{ padding: '3px 8px', borderRadius: 6, border: '1px solid #c7d2fe', fontSize: '0.85rem' }}
+                      >
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                      </select>
+                      <input
+                        type="number"
+                        min={1} max={60}
+                        value={assignForm[`dur_${g.key}`] || '10'}
+                        onChange={e => setAssignForm(f => ({ ...f, [`dur_${g.key}`]: e.target.value }))}
+                        placeholder="min"
+                        style={{ width: 60, padding: '3px 6px', borderRadius: 6, border: '1px solid #c7d2fe', fontSize: '0.85rem' }}
+                      />
+                      <span style={{ fontSize: '0.78rem', color: '#6b7280' }}>min</span>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div>
+              <label style={{ fontWeight: 700, fontSize: '0.9rem', display: 'block', marginBottom: 6 }}>Instructions (optional):</label>
+              <textarea
+                value={assignForm.instructions}
+                onChange={e => setAssignForm(f => ({ ...f, instructions: e.target.value }))}
+                placeholder="e.g. Focus on b/d confusion today"
+                rows={2}
+                style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #c7d2fe', fontFamily: 'inherit', fontSize: '0.9rem', boxSizing: 'border-box', resize: 'vertical' }}
+              />
+            </div>
+            {assignError && <p style={{ color: '#991b1b', margin: 0, fontSize: '0.9rem' }}>{assignError}</p>}
+            {assignSuccess && <p style={{ color: '#166534', margin: 0, fontSize: '0.9rem' }}>{assignSuccess}</p>}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button type="submit" className="submit-btn">Assign Session</button>
+              <button type="button" className="submit-btn" style={{ background: '#e5e7eb', color: '#374151' }} onClick={() => setAssignSessionChild(null)}>Cancel</button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {showSessionDetails && (
         <div className="session-details">
-          <h3>Game Sessions for {filteredChildren.find(c => c.username === selectedUsername)?.name}</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 8 }}>
+            <h3 style={{ margin: 0 }}>Game Sessions for {filteredChildren.find(c => c.username === selectedUsername)?.name}</h3>
+            <button
+              className="action-btn"
+              style={{ background: '#0f766e', color: '#fff' }}
+              onClick={() => navigate(`/report/${selectedUsername}`)}
+            >
+              Generate Report
+            </button>
+          </div>
           {sessionError && <p className="error-msg">{sessionError}</p>}
 
           {selectedChildSessions.map((session, index) => (
@@ -634,6 +879,210 @@ const TherapistDashboard = () => {
               ))}
             </div>
           )}
+
+          {/* ── Reading Level Progression ─────────────────────── */}
+          {readingProgress && (
+            <div style={{ marginTop: '32px' }}>
+              <h3 style={{ color: '#065f46', borderBottom: '2px solid #a7f3d0', paddingBottom: '6px' }}>
+                📚 Reading Level Progression
+              </h3>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
+                <span style={{ background: '#d1fae5', color: '#065f46', fontWeight: 800, fontSize: '1.05rem', padding: '4px 16px', borderRadius: 20, border: '2px solid #10b981' }}>
+                  Current: {readingProgress.currentLevel}
+                </span>
+                {readingProgress.therapistOverride && (
+                  <span style={{ background: '#fef3c7', color: '#92400e', fontSize: '0.82rem', padding: '3px 10px', borderRadius: 12, border: '1px solid #f59e0b' }}>
+                    Therapist Override Active
+                  </span>
+                )}
+              </div>
+              {readingProgress.levelHistory && readingProgress.levelHistory.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 14 }}>
+                  {readingProgress.levelHistory.map((h, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 8, fontSize: '0.88rem', alignItems: 'center', color: '#374151' }}>
+                      <span style={{ fontWeight: 700 }}>{h.fromLevel} → {h.toLevel}</span>
+                      <span style={{ color: '#6b7280' }}>{new Date(h.advancedAt).toLocaleDateString()}</span>
+                      <span style={{ background: h.advancedBy === 'therapist' ? '#fef3c7' : '#d1fae5', borderRadius: 6, padding: '1px 8px', fontSize: '0.8rem' }}>{h.advancedBy}</span>
+                      {h.note && <span style={{ fontStyle: 'italic', color: '#9ca3af' }}>{h.note}</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: '14px 18px' }}>
+                <p style={{ margin: '0 0 10px', fontWeight: 700, fontSize: '0.9rem', color: '#065f46' }}>Check / Override Level</p>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <select
+                    value={overrideLevel}
+                    onChange={e => setOverrideLevel(e.target.value)}
+                    style={{ padding: '5px 10px', borderRadius: 8, border: '1px solid #a7f3d0', fontFamily: 'inherit' }}
+                  >
+                    {READING_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                  </select>
+                  <input
+                    type="text"
+                    placeholder="Note (optional)"
+                    value={overrideNote}
+                    onChange={e => setOverrideNote(e.target.value)}
+                    style={{ padding: '5px 10px', borderRadius: 8, border: '1px solid #a7f3d0', fontFamily: 'inherit', fontSize: '0.88rem' }}
+                  />
+                  <button className="action-btn" style={{ background: '#0f766e', color: '#fff' }}
+                    onClick={() => handleOverrideLevel(selectedUsername)}>
+                    Set Level
+                  </button>
+                  <button className="action-btn"
+                    onClick={() => handleCheckAdvancement(selectedUsername)}>
+                    Check Auto-Advance
+                  </button>
+                </div>
+                {overrideMsg && <p style={{ margin: '8px 0 0', fontSize: '0.88rem', color: '#065f46', fontWeight: 600 }}>{overrideMsg}</p>}
+              </div>
+            </div>
+          )}
+
+          {/* ── Analytics Charts ──────────────────────────────── */}
+          {analyticsData && (
+            <div style={{ marginTop: '32px' }}>
+              <h3 style={{ color: '#1e40af', borderBottom: '2px solid #bfdbfe', paddingBottom: '6px' }}>
+                📊 Analytics Trends
+              </h3>
+              {analyticsData.phonemeAccuracy && analyticsData.phonemeAccuracy.length > 1 && (
+                <div style={{ marginBottom: 24 }}>
+                  <ReactApexChart
+                    type="line"
+                    height={220}
+                    options={{
+                      chart: { toolbar: { show: false }, id: 'phoneme-trend' },
+                      title: { text: 'Phoneme Accuracy Over Time', style: { fontSize: '13px' } },
+                      xaxis: { categories: analyticsData.phonemeAccuracy.map(p => new Date(p.date).toLocaleDateString()), labels: { rotate: -30 } },
+                      yaxis: { min: 0, max: 100, labels: { formatter: v => `${v}%` } },
+                      colors: ['#6366f1'],
+                      markers: { size: 4 },
+                      stroke: { curve: 'smooth', width: 2 },
+                      tooltip: { y: { formatter: v => `${v}%` } },
+                    }}
+                    series={[{ name: 'Accuracy', data: analyticsData.phonemeAccuracy.map(p => p.accuracy) }]}
+                  />
+                </div>
+              )}
+              {analyticsData.ranSpeed && analyticsData.ranSpeed.length > 1 && (
+                <div style={{ marginBottom: 24 }}>
+                  <ReactApexChart
+                    type="line"
+                    height={220}
+                    options={{
+                      chart: { toolbar: { show: false }, id: 'ran-trend' },
+                      title: { text: 'RAN Speed (items/min) Over Time', style: { fontSize: '13px' } },
+                      xaxis: { categories: analyticsData.ranSpeed.map(r => new Date(r.date).toLocaleDateString()), labels: { rotate: -30 } },
+                      yaxis: { min: 0, labels: { formatter: v => `${v}` } },
+                      colors: ['#10b981'],
+                      markers: { size: 4 },
+                      stroke: { curve: 'smooth', width: 2 },
+                    }}
+                    series={[{ name: 'Items/min', data: analyticsData.ranSpeed.map(r => r.itemsPerMinute) }]}
+                  />
+                </div>
+              )}
+              {analyticsData.workingMemory && analyticsData.workingMemory.length > 1 && (
+                <div style={{ marginBottom: 24 }}>
+                  <ReactApexChart
+                    type="line"
+                    height={220}
+                    options={{
+                      chart: { toolbar: { show: false }, id: 'wm-trend' },
+                      title: { text: 'Working Memory Score Over Time', style: { fontSize: '13px' } },
+                      xaxis: { categories: analyticsData.workingMemory.map(w => new Date(w.date).toLocaleDateString()), labels: { rotate: -30 } },
+                      yaxis: { min: 0 },
+                      colors: ['#7c3aed'],
+                      markers: { size: 4 },
+                      stroke: { curve: 'smooth', width: 2 },
+                    }}
+                    series={[{ name: 'WM Score', data: analyticsData.workingMemory.map(w => w.wms) }]}
+                  />
+                </div>
+              )}
+              {analyticsData.moodDistribution && Object.keys(analyticsData.moodDistribution).length > 0 && (
+                <div style={{ marginBottom: 24 }}>
+                  <ReactApexChart
+                    type="bar"
+                    height={180}
+                    options={{
+                      chart: { toolbar: { show: false }, id: 'mood-dist' },
+                      title: { text: 'Mood Distribution', style: { fontSize: '13px' } },
+                      xaxis: { categories: Object.keys(analyticsData.moodDistribution) },
+                      colors: ['#f59e0b'],
+                      plotOptions: { bar: { borderRadius: 6, distributed: true } },
+                      legend: { show: false },
+                    }}
+                    series={[{ name: 'Sessions', data: Object.values(analyticsData.moodDistribution) }]}
+                  />
+                </div>
+              )}
+              {analyticsData.frustrationTrend && analyticsData.frustrationTrend.length > 1 && (
+                <div style={{ marginBottom: 24 }}>
+                  <ReactApexChart
+                    type="line"
+                    height={200}
+                    options={{
+                      chart: { toolbar: { show: false }, id: 'frustration-trend' },
+                      title: { text: 'Frustration Trend (Angry + Sad %)', style: { fontSize: '13px' } },
+                      xaxis: { categories: analyticsData.frustrationTrend.map(f => new Date(f.date).toLocaleDateString()), labels: { rotate: -30 } },
+                      yaxis: { min: 0, max: 100, labels: { formatter: v => `${v}%` } },
+                      colors: ['#ef4444', '#3b82f6'],
+                      markers: { size: 4 },
+                      stroke: { curve: 'smooth', width: 2 },
+                    }}
+                    series={[
+                      { name: 'Angry %', data: analyticsData.frustrationTrend.map(f => f.angryPct) },
+                      { name: 'Sad %',   data: analyticsData.frustrationTrend.map(f => f.sadPct)   },
+                    ]}
+                  />
+                </div>
+              )}
+              {analyticsData.phonemeAccuracy.length <= 1 &&
+               analyticsData.ranSpeed.length <= 1 &&
+               analyticsData.workingMemory.length <= 1 && (
+                <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>Not enough data for trend charts yet (need 2+ sessions per metric).</p>
+              )}
+            </div>
+          )}
+
+          {/* ── AI Adaptation Log ─────────────────────────────── */}
+          {adaptationLogs.length > 0 && (
+            <div style={{ marginTop: '32px' }}>
+              <h3 style={{ color: '#6d28d9', borderBottom: '2px solid #ede9fe', paddingBottom: '6px' }}>
+                🤖 AI Adaptation Log ({adaptationLogs.length} events)
+              </h3>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
+                <thead>
+                  <tr style={{ background: '#ede9fe' }}>
+                    <th style={{ padding: '5px 10px', textAlign: 'left' }}>Date</th>
+                    <th style={{ padding: '5px 10px' }}>Game</th>
+                    <th style={{ padding: '5px 10px' }}>Emotion</th>
+                    <th style={{ padding: '5px 10px' }}>Difficulty</th>
+                    <th style={{ padding: '5px 10px' }}>Trigger</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {adaptationLogs.map((log, i) => (
+                    <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#faf5ff', borderBottom: '1px solid #ede9fe' }}>
+                      <td style={{ padding: '5px 10px', color: '#6b7280' }}>{new Date(log.createdAt).toLocaleString()}</td>
+                      <td style={{ padding: '5px 10px', textAlign: 'center', fontWeight: 600 }}>{log.gameKey}</td>
+                      <td style={{ padding: '5px 10px', textAlign: 'center' }}>{log.emotionDetected || '—'}</td>
+                      <td style={{ padding: '5px 10px', textAlign: 'center', fontSize: '0.82rem' }}>
+                        {log.previousDifficulty && log.newDifficulty
+                          ? <span>{log.previousDifficulty} → <strong>{log.newDifficulty}</strong></span>
+                          : '—'}
+                      </td>
+                      <td style={{ padding: '5px 10px', textAlign: 'center' }}>
+                        <span style={{ background: '#ede9fe', borderRadius: 8, padding: '1px 8px', fontSize: '0.8rem' }}>{log.triggerType}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
         </div>
       )}
     </div>

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import TTSButton from "../components/TTSButton";
 import "./WelcomeScreen.css";
+import { API_BASE } from "../config/api";
 
 /**
  * Mood definitions — each card shows an image, a label, a background colour,
@@ -53,10 +55,12 @@ export default function WelcomeScreen() {
   const [username,      setUsername]      = useState("");
   const [selectedMood,  setSelectedMood]  = useState(null);
   const [message,       setMessage]       = useState("");
+  const [todaySession,  setTodaySession]  = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    setUsername(localStorage.getItem("username") || "Guest");
+    const storedUsername = localStorage.getItem("username") || "Guest";
+    setUsername(storedUsername);
     // Pre-select any previously saved mood
     const saved = localStorage.getItem("selectedEmotion");
     if (saved) {
@@ -65,6 +69,13 @@ export default function WelcomeScreen() {
         setSelectedMood(found.key);
         setMessage(found.message);
       }
+    }
+    // Fetch today's assigned session
+    if (storedUsername && storedUsername !== "Guest") {
+      const today = new Date().toISOString().slice(0, 10);
+      axios.get(`${API_BASE}/api/assigned-sessions?childUsername=${storedUsername}&date=${today}`)
+        .then(r => { if (r.data && r.data.length > 0) setTodaySession(r.data[0]); })
+        .catch(() => {});
     }
   }, []);
 
@@ -140,6 +151,27 @@ export default function WelcomeScreen() {
           <span>{message}</span>
           <TTSButton text={message} size="sm" label="Read message aloud" />
         </div>
+      )}
+
+      {/* ── Today's Session ────────────────────────────────────────────────── */}
+      {todaySession && (
+        <section className="todays-session-panel" aria-label="Today's assigned session">
+          <h3>Today's Session</h3>
+          {todaySession.instructions && (
+            <p className="session-instructions">{todaySession.instructions}</p>
+          )}
+          <ol>
+            {todaySession.games
+              .slice()
+              .sort((a, b) => a.order - b.order)
+              .map((g, i) => (
+                <li key={i}>
+                  {g.gameKey}
+                  <span className="game-meta">{g.difficulty} · {g.durationMin} min</span>
+                </li>
+              ))}
+          </ol>
+        </section>
       )}
 
       {/* ── Start button ───────────────────────────────────────────────────── */}

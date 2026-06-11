@@ -4,6 +4,7 @@ import "./MirrorWordsGame.css";
 import useEmotionDetection from "../hooks/useEmotionDetection";
 import useGameSessionLogger from "../hooks/useGameSessionLogger";
 import TTSButton from "../components/TTSButton";
+import { API_BASE } from '../config/api';
 const MirrorWordsGame = () => {
   const { emotion, videoRef, canvasRef } = useEmotionDetection();
   const [level, setLevel] = useState("Easy");
@@ -18,7 +19,7 @@ const MirrorWordsGame = () => {
   useEffect(() => {
   const fetchQuestions = async () => {
     try {
-      const res = await fetch(`http://localhost:4000/api/mirrorquestions/${level}`);
+      const res = await fetch(`${API_BASE}/api/mirrorquestions/${level}`);
       const data = await res.json();
       setQuestions(data);
       setCurrent(0);

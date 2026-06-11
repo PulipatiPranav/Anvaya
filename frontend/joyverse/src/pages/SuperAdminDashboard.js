@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./SuperAdminDashboard.css";
 
+import { API_BASE } from '../config/api';
 const SuperAdminDashboard = () => {
   const [therapists, setTherapists] = useState([]);
   const [form, setForm] = useState({ therapistId: '', name: '', username: '', password: '' });
@@ -9,7 +10,7 @@ const SuperAdminDashboard = () => {
 
   const fetchTherapists = async () => {
     try {
-      const res = await axios.get("http://localhost:4000/api/superadmin/therapists-with-children");
+      const res = await axios.get(`${API_BASE}/api/superadmin/therapists-with-children`);
       setTherapists(res.data);
     } catch (error) {
       console.error("Error fetching therapists:", error);
@@ -22,7 +23,7 @@ const SuperAdminDashboard = () => {
 
   const handleAddTherapist = async () => {
     try {
-      await axios.post("http://localhost:4000/api/superadmin/therapists", form);
+      await axios.post(`${API_BASE}/api/superadmin/therapists`, form);
       setForm({ therapistId: '', name: '', username: '', password: '' });
       setShowForm(false);
       fetchTherapists();

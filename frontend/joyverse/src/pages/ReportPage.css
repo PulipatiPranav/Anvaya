@@ -3,7 +3,7 @@
   max-width: 900px;
   margin: 0 auto;
   padding: 32px 24px 60px;
-  font-family: 'OpenDyslexic', 'Arial', sans-serif;
+  font-family: var(--font-opendyslexic);
   color: #1a202c;
   background: #fff;
 }

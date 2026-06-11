@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './ReportPage.css';
+import { LoadingState, ErrorBanner } from '../components/LoadingState';
+import { API_BASE } from '../config/api';
 
 const MOOD_COLORS = {
   happy:   { bg: '#dcfce7', color: '#166534' },
@@ -26,14 +28,14 @@ export default function ReportPage() {
   const [error, setError]   = useState('');
 
   useEffect(() => {
-    axios.get(`http://localhost:4000/api/reports/${childUsername}`)
+    axios.get(`${API_BASE}/api/reports/${childUsername}`)
       .then(r => setData(r.data))
-      .catch(() => setError('Failed to load report data.'))
+      .catch(() => setError('Failed to load report data. Please check your connection and try again.'))
       .finally(() => setLoading(false));
   }, [childUsername]);
 
-  if (loading) return <div className="report-container"><p>Loading report...</p></div>;
-  if (error)   return <div className="report-container"><p style={{ color: '#991b1b' }}>{error}</p></div>;
+  if (loading) return <div className="report-container"><LoadingState label="Loading report…" /></div>;
+  if (error)   return <div className="report-container"><ErrorBanner message={error} /></div>;
   if (!data)   return null;
 
   const { summary, readingProgress, phonemeTrend, ranTrend, pairAccuracy } = data;
