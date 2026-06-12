@@ -36,12 +36,10 @@ export default function ReadingFluency() {
 
   const [phase, setPhase] = useState('setup'); // setup | listen | reading | results
   const [selectedPassage, setSelectedPassage] = useState(PASSAGES[0]);
-  const [mode, setMode] = useState(null); // 'listen' | 'reading'
 
   // Listen mode state
   const [currentWordIdx, setCurrentWordIdx] = useState(-1);
   const [listenDone, setListenDone] = useState(false);
-  const uttRef = useRef(null);
 
   // Reading mode state
   const [isRecording, setIsRecording] = useState(false);
@@ -68,45 +66,25 @@ export default function ReadingFluency() {
 
   // Cancel TTS on unmount or passage change
   useEffect(() => {
-    return () => {
-      SpeechService.stop();
-      if (uttRef.current) { uttRef.current = null; }
-    };
+    return () => { SpeechService.stop(); };
   }, [selectedPassage]);
 
   const passageWords = selectedPassage.text.split(/\s+/);
 
-  // ── Listen mode: start TTS with word highlighting ──────────────────────────
+  // ── Listen mode: start TTS with synchronized word highlighting ─────────────
   const startListening = useCallback(() => {
     SpeechService.stop();
     setCurrentWordIdx(-1);
     setListenDone(false);
 
-    const text = selectedPassage.text;
-    try {
-      const utt = new SpeechSynthesisUtterance(text);
-      utt.rate = 0.85;
-      utt.lang = 'en-US';
-      utt.onboundary = (e) => {
-        if (e.name === 'word') {
-          const upToChar = text.slice(0, e.charIndex + (e.charLength || 1));
-          const wordCount = upToChar.trim().split(/\s+/).length - 1;
-          setCurrentWordIdx(wordCount);
-        }
-      };
-      utt.onend = () => {
+    SpeechService.speak(selectedPassage.text, {
+      rate: 0.85,
+      onWord: (idx) => setCurrentWordIdx(idx),
+      onEnd: () => {
         setCurrentWordIdx(-1);
         setListenDone(true);
-      };
-      utt.onerror = () => {
-        setListenDone(true);
-      };
-      uttRef.current = utt;
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utt);
-    } catch (err) {
-      console.warn('[ReadingFluency] TTS error:', err);
-    }
+      },
+    });
   }, [selectedPassage]);
 
   const stopListening = useCallback(() => {
@@ -270,14 +248,14 @@ export default function ReadingFluency() {
             <div className="rf-mode-row">
               <button
                 className="gs-btn gs-btn--primary"
-                onClick={() => { setMode('listen'); setPhase('listen'); setListenDone(false); setCurrentWordIdx(-1); }}
+                onClick={() => { setPhase('listen'); setListenDone(false); setCurrentWordIdx(-1); }}
                 aria-label="Listen and follow along mode"
               >
                 🎧 Listen &amp; Follow
               </button>
               <button
                 className="gs-btn gs-btn--success"
-                onClick={() => { setMode('reading'); setPhase('reading'); setRecognizedWords(new Set()); setRecognizedCount(0); }}
+                onClick={() => { setPhase('reading'); setRecognizedWords(new Set()); setRecognizedCount(0); }}
                 aria-label="Read aloud with speech recognition mode"
               >
                 🎤 Read Aloud
@@ -337,7 +315,7 @@ export default function ReadingFluency() {
                   </button>
                   <button
                     className="gs-btn gs-btn--success"
-                    onClick={() => { stopListening(); setPhase('reading'); setMode('reading'); setRecognizedWords(new Set()); setRecognizedCount(0); }}
+                    onClick={() => { stopListening(); setPhase('reading'); setRecognizedWords(new Set()); setRecognizedCount(0); }}
                     aria-label="Try reading the passage yourself"
                   >
                     Try Reading It →

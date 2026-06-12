@@ -6,10 +6,6 @@ import "./Games.css";
 import shapememoryimg     from '../assets/shapememorygame.png';
 import mathfunimg         from '../assets/mathfun.png';
 import funquizimg         from '../assets/funquiz.png';
-import wordquestimg       from '../assets/wordquest.png';
-import syllabletapgameimg from '../assets/syllabletapgame.png';
-import letterbridgeimg    from '../assets/letterbridge.png';
-import mirrorwordgameimg  from '../assets/mirrorwordsgame.png';
 
 const MOOD_TO_EMOTION = {
   happy:   'Happy',
@@ -21,13 +17,13 @@ const MOOD_TO_EMOTION = {
 };
 
 const ALL_GAMES = [
-  { key: 'wordpuzzleadventure', label: 'Word Quest',          route: '/wordpuzzleadventure', image: wordquestimg,       cssClass: 'games-page-word-game'           },
+  { key: 'wordpuzzleadventure', label: 'Word Quest',          route: '/wordpuzzleadventure', image: null, emoji: '🗺️', cssClass: 'games-page-word-game'           },
   { key: 'mathgame',            label: 'Math Fun',            route: '/mathgame',            image: mathfunimg,         cssClass: 'games-page-math-game'           },
   { key: 'quiz',                label: 'Fun Quiz',            route: '/quiz',                image: funquizimg,         cssClass: 'games-page-quiz-game'           },
-  { key: 'syllabletapgame',     label: 'Fun with Syllables',  route: '/syllabletapgame',     image: syllabletapgameimg, cssClass: 'games-page-syllable-game'       },
+  { key: 'syllabletapgame',     label: 'Fun with Syllables',  route: '/syllabletapgame',     image: null, emoji: '🎵', cssClass: 'games-page-syllable-game'       },
   { key: 'shapememorygame',     label: 'Shape Memory',        route: '/shapememorygame',     image: shapememoryimg,     cssClass: 'games-page-shapememory-game'    },
-  { key: 'letterbridge',        label: 'Letter Bridging',     route: '/letterbridge',        image: letterbridgeimg,    cssClass: 'games-page-letterbridge-game'   },
-  { key: 'mirrorword',          label: 'Mirror Words',        route: '/mirrorword',          image: mirrorwordgameimg,  cssClass: 'games-page-mirrorword-game'     },
+  { key: 'letterbridge',        label: 'Letter Bridging',     route: '/letterbridge',        image: null, emoji: '🌉', cssClass: 'games-page-letterbridge-game'   },
+  { key: 'mirrorword',          label: 'Mirror Words',        route: '/mirrorword',          image: null, emoji: '🪞', cssClass: 'games-page-mirrorword-game'     },
   { key: 'phonemetap',          label: 'Phoneme Tap',         route: '/phonemetap',          image: null, emoji: '👂', cssClass: 'games-page-phonemetap-game'     },
   { key: 'lettersound',         label: 'Letter Sound Match',  route: '/lettersound',         image: null, emoji: '🔤', cssClass: 'games-page-lettersound-game'    },
   { key: 'confusableletter',    label: 'Letter Trainer',      route: '/confusableletter',    image: null, emoji: '🔡', cssClass: 'games-page-confusable-game'     },

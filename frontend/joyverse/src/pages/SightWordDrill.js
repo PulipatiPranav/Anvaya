@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import GameShell from '../components/GameShell';
 import useEmotionDetection from '../hooks/useEmotionDetection';
 import { getCardStyle } from '../utils/EmotionThemeMap';

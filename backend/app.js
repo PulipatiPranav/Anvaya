@@ -30,6 +30,7 @@ import reportsRoutes          from './Routes/reports.js';
 import fluencyRoutes          from './Routes/fluency.js';
 import sightWordsRoutes       from './Routes/sightWords.js';
 import morphologyRoutes       from './Routes/morphology.js';
+import ttsRoutes              from './Routes/tts.js';
 
 // ── Startup guard ────────────────────────────────────────────────────────────
 if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
@@ -130,6 +131,10 @@ app.use(generalLimiter);
 
 // Public — no auth required
 app.use('/api/auth',           loginLimiter, authRoutes);
+
+// Server-side TTS — public (browser <audio> requests cannot carry a JWT;
+// input is capped and contains only non-sensitive UI text)
+app.use('/api/tts',                 ttsRoutes);
 
 // Educational content — public read-only
 app.use('/api/phonics',             phonicsContentRoutes);
