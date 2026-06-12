@@ -26,15 +26,28 @@ html,
 body {
   margin: 0;
   padding: 0;
-  height: 100%;
+  min-height: 100%;
   background-color: var(--color-beige);
   /* a11y-controlled typography */
   font-family: var(--a11y-font);
   font-size: var(--a11y-font-size);
   letter-spacing: var(--a11y-letter-spacing);
   line-height: var(--a11y-line-height);
-  /* smooth background-color transitions between emotion themes */
-  transition: background-color 0.6s ease;
+  /* emotion crossfade layers sit at z-index -1/-2; all page content is above */
+  isolation: auto;
+  position: relative;
+}
+
+/* Ensure the two emotion background layers (#jv-bg-a, #jv-bg-b) never
+   interfere with scrollable content or pointer events. */
+#jv-bg-a,
+#jv-bg-b {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* ── Global focus style — visible for keyboard users ───────────────────────── */

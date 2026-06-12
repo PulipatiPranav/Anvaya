@@ -3,6 +3,7 @@ import confetti from "canvas-confetti";
 import useEmotionDetection from "../hooks/useEmotionDetection";
 import useGameSessionLogger from "../hooks/useGameSessionLogger";
 import TTSButton from "../components/TTSButton";
+import GameShell from "../components/GameShell";
 import "./Quiz.css";
 
 const emotionToDifficulty = {
@@ -16,6 +17,7 @@ const emotionToDifficulty = {
 const MathGame = () => {
   const {
     emotion,
+    confidence,
     sessionDominantEmotion,
     finalizeSession,
     videoRef,
@@ -157,14 +159,14 @@ const MathGame = () => {
   };
 
   return (
-    <div className="quiz-container">
+    <GameShell title="Math Fun" emotion={emotion} confidence={confidence}>
+    <div className="quiz-container" style={{ padding: 0, minHeight: 'auto' }}>
       <div className="game-card" style={{
     backgroundColor: getEmotionStyles(emotion).backgroundColor,
     color: getEmotionStyles(emotion).color,
     '--text-color': getEmotionStyles(emotion).color,
   }}>
         <h2 className="game-title">Math Quiz!</h2>
-        <p className="game-text emotion-text">Detected Emotion: {emotion}</p>
         <p className="game-text">Difficulty: {difficulty}</p>
 
         {gameOver ? (
@@ -201,11 +203,12 @@ const MathGame = () => {
           </>
         )}
 
-        <video ref={videoRef} autoPlay playsInline muted style={{ position: "absolute", top: 0, left: 0, visibility: "hidden" }} />
-<canvas ref={canvasRef} width={640} height={480} style={{ position: "absolute", top: 0, left: 0, visibility: "hidden" }} />
+        <video ref={videoRef} autoPlay playsInline muted style={{ display: 'none' }} />
+        <canvas ref={canvasRef} width={640} height={480} style={{ display: 'none' }} />
 
       </div>
     </div>
+    </GameShell>
   );
 };
 

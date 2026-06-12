@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import mongoSanitize from 'express-mongo-sanitize';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -40,9 +39,16 @@ if (!process.env.MONGO_URI) {
 }
 
 // ── MongoDB ──────────────────────────────────────────────────────────────────
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI, {
+  serverSelectionTimeoutMS: 10000,  // fail fast if Atlas unreachable at startup
+  heartbeatFrequencyMS:     10000,  // ping Atlas every 10 s to keep the connection alive
+  socketTimeoutMS:          45000,  // close sockets idle for 45 s
+})
   .then(() => console.log('[db] Connected to MongoDB'))
   .catch((err) => { console.error('[db] Connection error:', err.message); process.exit(1); });
+
+mongoose.connection.on('disconnected', () => console.warn('[db] MongoDB disconnected — attempting reconnect'));
+mongoose.connection.on('reconnected',  () => console.log('[db] MongoDB reconnected'));
 
 const app = express();
 
@@ -75,7 +81,27 @@ app.use(express.json({ limit: '64kb' }));
 app.use(express.urlencoded({ extended: false, limit: '64kb' }));
 
 // ── NoSQL injection sanitization ──────────────────────────────────────────────
-app.use(mongoSanitize());
+// express-mongo-sanitize v2 is incompatible with Express 5 (req.query is a
+// read-only getter in Express 5; the package tries to set it and throws).
+// This replaces it: recursively strip keys starting with '$' or containing '.'
+// from req.body only (req.query values are plain strings — not operator objects).
+function stripMongoOperators(value) {
+  if (Array.isArray(value)) return value.map(stripMongoOperators);
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([k]) => !k.startsWith('$') && !k.includes('.'))
+        .map(([k, v]) => [k, stripMongoOperators(v)])
+    );
+  }
+  return value;
+}
+app.use((req, _res, next) => {
+  if (req.body && typeof req.body === 'object') {
+    req.body = stripMongoOperators(req.body);
+  }
+  next();
+});
 
 // ── Rate limiting ─────────────────────────────────────────────────────────────
 const loginLimiter = rateLimit({

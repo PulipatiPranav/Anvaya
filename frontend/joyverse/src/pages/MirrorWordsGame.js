@@ -4,9 +4,10 @@ import "./MirrorWordsGame.css";
 import useEmotionDetection from "../hooks/useEmotionDetection";
 import useGameSessionLogger from "../hooks/useGameSessionLogger";
 import TTSButton from "../components/TTSButton";
+import GameShell from "../components/GameShell";
 import { API_BASE } from '../config/api';
 const MirrorWordsGame = () => {
-  const { emotion, videoRef, canvasRef } = useEmotionDetection();
+  const { emotion, confidence, videoRef, canvasRef } = useEmotionDetection();
   const [level, setLevel] = useState("Easy");
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState(null);
@@ -93,6 +94,7 @@ const filteredQuestions = questions;
   };
 
   return (
+    <GameShell title="Mirror Words" emotion={emotion} confidence={confidence}>
     <div className="mirror-game-container">
       <div className="mirror-game-title">Mirror Words</div>
       
@@ -157,9 +159,9 @@ const filteredQuestions = questions;
         </div>
       )}
       <video ref={videoRef} autoPlay style={{ display: "none" }} />
-    <canvas ref={canvasRef} width={640} height={480} style={{ display: "none" }}/>
-    
+      <canvas ref={canvasRef} width={640} height={480} style={{ display: "none" }} />
     </div>
+    </GameShell>
   );
 };
 

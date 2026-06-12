@@ -4,6 +4,7 @@ import './VerbalMemoryGame.css';
 import useEmotionDetection from '../hooks/useEmotionDetection';
 import useGameSessionLogger from '../hooks/useGameSessionLogger';
 import SpeechService from '../services/SpeechService';
+import GameShell from '../components/GameShell';
 import axios from 'axios';
 
 import { API_BASE } from '../config/api';
@@ -42,7 +43,7 @@ function computeWorkingMemoryScore(maxLen, avgAccuracy) {
 }
 
 export default function VerbalMemoryGame() {
-  const { emotion, videoRef, canvasRef } = useEmotionDetection();
+  const { emotion, confidence, videoRef, canvasRef } = useEmotionDetection();
 
   const [mode,       setMode]       = useState('words');
   const [difficulty, setDifficulty] = useState('easy');
@@ -244,6 +245,7 @@ export default function VerbalMemoryGame() {
   // ── SETUP ──────────────────────────────────────────────────────────────
   if (gamePhase === 'setup') {
     return (
+      <GameShell title="Sequence Memory" emotion={emotion} confidence={confidence}>
       <div className="vsm-container">
         <div className="vsm-card vsm-card--setup" style={cardStyle}>
           <h1 className="vsm-title">Verbal Sequence Memory</h1>
@@ -293,12 +295,14 @@ export default function VerbalMemoryGame() {
           </button>
         </div>
       </div>
+      </GameShell>
     );
   }
 
   // ── LISTEN ─────────────────────────────────────────────────────────────
   if (gamePhase === 'listen') {
     return (
+      <GameShell title="Sequence Memory" emotion={emotion} confidence={confidence}>
       <div className="vsm-container">
         <div className="vsm-card" style={cardStyle}>
           <div className="vsm-round-badge">Round {roundNum + 1} / {ROUNDS_PER_GAME}</div>
@@ -331,12 +335,14 @@ export default function VerbalMemoryGame() {
           </p>
         </div>
       </div>
+      </GameShell>
     );
   }
 
   // ── RECALL ─────────────────────────────────────────────────────────────
   if (gamePhase === 'recall') {
     return (
+      <GameShell title="Sequence Memory" emotion={emotion} confidence={confidence}>
       <div className="vsm-container">
         <div className="vsm-card" style={cardStyle}>
           <div className="vsm-round-badge">Round {roundNum + 1} / {ROUNDS_PER_GAME}</div>
@@ -386,6 +392,7 @@ export default function VerbalMemoryGame() {
           </div>
         </div>
       </div>
+      </GameShell>
     );
   }
 
@@ -393,6 +400,7 @@ export default function VerbalMemoryGame() {
   if (gamePhase === 'feedback' && roundResult) {
     const { correct, positionAccuracy, presented, recalled: rec } = roundResult;
     return (
+      <GameShell title="Sequence Memory" emotion={emotion} confidence={confidence}>
       <div className="vsm-container">
         <div className="vsm-card" style={cardStyle}>
           <div className="vsm-round-badge">Round {roundNum + 1} / {ROUNDS_PER_GAME}</div>
@@ -431,6 +439,7 @@ export default function VerbalMemoryGame() {
           </button>
         </div>
       </div>
+      </GameShell>
     );
   }
 
@@ -445,6 +454,7 @@ export default function VerbalMemoryGame() {
     const perfectRounds = rounds.filter(r => r.correct).length;
 
     return (
+      <GameShell title="Sequence Memory" emotion={emotion} confidence={confidence}>
       <div className="vsm-container">
         <div className="vsm-card" style={cardStyle}>
           <h1 className="vsm-title">Verbal Sequence Memory</h1>
@@ -500,6 +510,7 @@ export default function VerbalMemoryGame() {
         <video  ref={videoRef}  autoPlay style={{ display: 'none' }} />
         <canvas ref={canvasRef} width={640} height={480} style={{ display: 'none' }} />
       </div>
+      </GameShell>
     );
   }
 

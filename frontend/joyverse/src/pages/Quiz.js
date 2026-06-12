@@ -124,6 +124,7 @@ import confetti from "canvas-confetti";
 import useEmotionDetection from "../hooks/useEmotionDetection";
 import useGameSessionLogger from "../hooks/useGameSessionLogger";
 import TTSButton from "../components/TTSButton";
+import GameShell from "../components/GameShell";
 import "./Quiz.css";
 
 import { API_BASE } from '../config/api';
@@ -137,7 +138,7 @@ const emotionToDifficulty = {
 
 
 const Quiz = () => {
-  const { emotion, sessionDominantEmotion, finalizeSession, videoRef, canvasRef } = useEmotionDetection();
+  const { emotion, confidence, sessionDominantEmotion, finalizeSession, videoRef, canvasRef } = useEmotionDetection();
   const [questions, setQuestions] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
@@ -211,14 +212,14 @@ const Quiz = () => {
   }
 };
   return (
-    <div className="quiz-container">
+    <GameShell title="Fun Quiz" emotion={emotion} confidence={confidence}>
+    <div className="quiz-container" style={{ padding: 0, minHeight: 'auto' }}>
       <div className="game-card" style={{
     backgroundColor: getEmotionStyles(emotion).backgroundColor,
     color: getEmotionStyles(emotion).color,
     '--text-color': getEmotionStyles(emotion).color,
   }}>
         <h2 className="game-title">Fun Quiz!</h2>
-        <p className="game-text emotion-text">Detected Emotion: {emotion}</p>
         <p className="game-text">Difficulty: {difficulty}</p>
 
         {questions.length === 0 ? (
@@ -243,7 +244,8 @@ const Quiz = () => {
             <div className="quiz-options">
               {questions[currentQuestion].options.map((option, index) => (
                 <button key={index} className="quiz-option-btn" onClick={() => handleAnswerClick(option.text)}>
-                  <img src={option.image} alt={option.text} className="quiz-option-image" />
+                  {option.image && <img src={option.image} alt="" className="quiz-option-image" />}
+                  <span>{option.text}</span>
                 </button>
               ))}
             </div>
@@ -255,6 +257,7 @@ const Quiz = () => {
         <canvas ref={canvasRef} width={640} height={480} style={{ display: "none" }} />
       </div>
     </div>
+    </GameShell>
   );
 };
 

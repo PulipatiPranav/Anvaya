@@ -4,6 +4,7 @@ import './SyllableTapGame.css';
 import useEmotionDetection from "../hooks/useEmotionDetection";
 import useGameSessionLogger from "../hooks/useGameSessionLogger";
 import TTSButton from "../components/TTSButton";
+import GameShell from "../components/GameShell";
 import { API_BASE } from '../config/api';
 // const hardcodedWords = {
 //   easy: [
@@ -30,7 +31,7 @@ import { API_BASE } from '../config/api';
 // };
 
 export default function SyllableTapGame() {
-  const { emotion, videoRef, canvasRef } = useEmotionDetection();
+  const { emotion, confidence, videoRef, canvasRef } = useEmotionDetection();
   const [difficulty, setDifficulty] = useState('easy');
   const [wordPool, setWordPool] = useState([]);
   const [usedWords, setUsedWords] = useState([]);
@@ -142,13 +143,14 @@ const handleDifficultyChange = (e) => {
 };
 
   return (
-  <div className="game-container">
+  <GameShell title="Fun with Syllables" emotion={emotion} confidence={confidence}>
+  <div className="game-container" style={{ padding: 0 }}>
   <div className="game-card" style={{
     backgroundColor: getEmotionStyles(emotion).backgroundColor,
     color: getEmotionStyles(emotion).color,
     '--text-color': getEmotionStyles(emotion).color,
   }}>
-    <h2 className="game-title">Syllable Tap Game</h2>
+    <h2 className="game-title">Syllable Tap</h2>
 
     <div className="difficulty-select">
       <label htmlFor="difficulty">Difficulty: </label>
@@ -209,5 +211,6 @@ const handleDifficultyChange = (e) => {
     <canvas ref={canvasRef} width={640} height={480} style={{ display: "none" }} />
   </div>
   </div>
+  </GameShell>
 );
 }

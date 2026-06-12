@@ -43,11 +43,12 @@ function Games() {
   }, []);
 
   const backgroundMap = {
-    happy:   "url('/backgrounds/happy.jpg')",
-    smile:   "url('/backgrounds/happy.jpg')",
-    neutral: "url('/backgrounds/neutral.jpg')",
-    sad:     "url('/backgrounds/sad.jpg')",
-    angry:   "url('/backgrounds/angry.jpg')",
+    happy:    "url('/gameBackgrounds/happy.jpg')",
+    smile:    "url('/gameBackgrounds/happy.jpg')",
+    neutral:  "url('/gameBackgrounds/neutral.jpg')",
+    sad:      "url('/gameBackgrounds/sad.jpg')",
+    angry:    "url('/gameBackgrounds/angry.jpg')",
+    surprise: "url('/gameBackgrounds/surprise.jpg')",
   };
 
   const backgroundStyle = {

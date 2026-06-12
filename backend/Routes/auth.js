@@ -54,7 +54,7 @@ function issueToken(payload) {
 }
 
 router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password } = req.body || {};
 
   if (!username || typeof username !== 'string' ||
       !password || typeof password !== 'string') {
@@ -95,7 +95,6 @@ router.post('/login', async (req, res) => {
       return res.json({ role: 'child', token });
     }
 
-    // Generic error — prevents user enumeration
     return res.status(401).json({ error: 'Invalid credentials' });
 
   } catch (err) {

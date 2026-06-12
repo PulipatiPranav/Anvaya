@@ -60,6 +60,24 @@ body, .game-card {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+.word-puzzle-image {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+  border-radius: 16px;
+  margin: 10px auto;
+  display: block;
+}
+
+.word-puzzle-emoji {
+  display: block;
+  font-size: 6rem;
+  line-height: 1;
+  margin: 10px auto;
+  text-align: center;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+}
+
 .word-slot-container {
   display: flex;
   justify-content: center;

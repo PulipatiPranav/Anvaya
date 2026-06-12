@@ -1,26 +1,11 @@
 /* Font and base layout */
-body, .game-card {
+.game-card {
   font-family: var(--font-opendyslexic, sans-serif);
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  background: var(--background-color, white);
   color: var(--text-color, #333);
-  transition: all 0.3s ease-in-out;
+  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
 }
 
-/* Global fallback theme variables (optional) */
-/* :root {
-  --background-color: white;
-  --card-color: rgba(255, 255, 255, 0.8);
-  --button-bg: #007bff;
-  --button-hover-bg: #0056b3;
-  --button-text: white;
-  --text-color: #333;
-  --score-color: #ff6600;
-} */
-
-/* Quiz container */
+/* Quiz container — transparent so body background-image from emotion theme shows */
 .quiz-container {
   display: flex;
   justify-content: center;
@@ -28,8 +13,7 @@ body, .game-card {
   min-height: 100vh;
   padding: 20px;
   box-sizing: border-box;
-  background: var(--background-color);
-  transition: background 0.3s ease-in-out;
+  background: transparent;
 }
 
 /* Card */

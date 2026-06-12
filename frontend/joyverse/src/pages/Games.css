@@ -1,231 +1,130 @@
+/* ── Games page — consistent glassmorphism design ───────────────────────── */
+
 .games-page-container {
   text-align: center;
-  padding: 0;
+  padding-bottom: 60px;
   min-height: 100vh;
-  width: 100vw;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 60px;
+  gap: 50px;
+  font-family: var(--font-opendyslexic);
 }
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
 .header-container {
-  background-color: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(10px);
   align-self: stretch;
-  position: relative;
-  text-shadow: 0 6.5px 5px rgba(0, 0, 0, 0.25);
-  margin: 0;
-  min-height: 200px;
-  font-size: inherit;
-  font-weight: 700;
-  font-family: inherit;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 24px 24px;
+  padding: 48px 24px 32px;
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
+
 .games-page-title {
-  font-size: 5rem;
-  color: #070707;
-  text-shadow: 3px 3px 8px rgba(0, 0, 0,  0.2);
-  margin-bottom: 10px;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  color: #1e1b4b;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.15);
+  margin: 0 0 8px;
+  font-family: var(--font-opendyslexic);
 }
-
-/* Subtitle */
 .games-page-subtitle {
-  font-size: 2rem;
-  color: #1b1a1a;
-  margin-bottom: 30px;
+  font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+  color: #374151;
+  margin: 0;
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.1);
+  font-family: var(--font-opendyslexic);
 }
 
-/* Game List Styling */
+/* ── Game grid ───────────────────────────────────────────────────────────── */
 .games-page-list {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  padding-left: 30px;
-  padding-right: 30px;
-  gap: 30px;
+  padding: 0 24px;
+  gap: 24px;
+  max-width: 1400px;
 }
 
-/* Individual Game Card — rendered as <button> */
+/* ── Individual game card ────────────────────────────────────────────────── */
 .games-page-card {
   appearance: none;
   -webkit-appearance: none;
-  border: none;
-  background: #fff;
-  padding: 40px;
-  border-radius: 15px;
-  box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  padding: 28px 24px 24px;
+  border-radius: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0,0,0,0.06);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease;
   cursor: pointer;
-  width: 260px;
+  width: 220px;
+  min-height: 240px;
   text-align: center;
   font-family: var(--font-opendyslexic);
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  gap: 10px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background-color: rgba(255, 255, 255, 0.3);
 }
-
-/* Hover Effects */
 .games-page-card:hover {
-  transform: scale(1.08);
-  box-shadow: 6px 6px 15px rgba(0, 0, 0, 0.3);
+  transform: translateY(-6px) scale(1.04);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
+  background-color: rgba(255, 255, 255, 0.6) !important;
 }
-
-/* Game Titles */
+.games-page-card:focus-visible {
+  outline: 3px solid #6366f1;
+  outline-offset: 4px;
+}
 .games-page-card h2 {
-  font-size: 1.5rem;
-  margin-bottom: 10px;
+  font-size: 1.15rem;
+  margin: 0;
+  color: #1e1b4b;
+  font-family: var(--font-opendyslexic);
+  font-weight: 800;
 }
 
-/* Game Descriptions */
-.games-page-card p {
-  font-size: 1.1rem;
-  color: #444;
-}
+/* ── Per-game accent colors ─────────────────────────────────────────────── */
+.games-page-word-game       { background-color: rgba(253, 186, 116, 0.35); }
+.games-page-math-game       { background-color: rgba(134, 239, 172, 0.35); }
+.games-page-quiz-game       { background-color: rgba(147, 197, 253, 0.35); }
+.games-page-syllable-game   { background-color: rgba(240, 171, 252, 0.35); }
+.games-page-shapememory-game{ background-color: rgba(253, 224, 71,  0.35); }
+.games-page-letterbridge-game{ background-color: rgba(196, 181, 253, 0.35); }
+.games-page-mirrorword-game { background-color: rgba(252, 165, 165, 0.35); }
+.games-page-phonemetap-game { background-color: rgba(165, 243, 252, 0.35); }
+.games-page-lettersound-game{ background-color: rgba(167, 243, 208, 0.35); }
+.games-page-verbalmemory-game{ background-color: rgba(199, 210, 254, 0.35); }
+.games-page-confusable-game { background-color: rgba(221, 214, 254, 0.35); }
+.games-page-ran-game        { background-color: rgba(253, 230, 138, 0.35); }
 
-/* Unique Colors for Each Game */
-.games-page-word-game {
-  background: #fbc4b3;
-  /* border: 3px solid #ff5722; */
-  backdrop-filter: blur(10px); 
-  -webkit-backdrop-filter: blur(10px); 
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.games-page-word-game:hover{
-  background-color: rgba(255, 255, 255, 0.5);
-}
-
-.games-page-math-game {
-  background: #c8e6c9;
-  backdrop-filter: blur(10px); 
-  -webkit-backdrop-filter: blur(10px); 
-  background-color: rgba(255, 255, 255, 0.35);
-}
-.games-page-math-game:hover{
-  background-color: rgba(255, 255, 255, 0.5);
-}
-
-.games-page-quiz-game {
-  background: #bbdefb;
-  /* border: 3px solid #2196f3; */
-  backdrop-filter: blur(10px); 
-  -webkit-backdrop-filter: blur(10px); 
-  background-color: rgba(255, 255, 255, 0.35);
-  
-}
-.games-page-quiz-game:hover{
-  background-color: rgba(255, 255, 255, 0.5);
-}
-
-.games-page-syllable-game {
-  background: #f5bbe4;
-  /* border: 3px solid #f406ac; */
-  backdrop-filter: blur(10px); 
-  -webkit-backdrop-filter: blur(10px); 
-  background-color: rgba(255, 255, 255, 0.35);
-}
-.games-page-syllable-game:hover{
-  background-color: rgba(255, 255, 255, 0.5);
-}
-.games-page-shapememory-game {
-  background: #f7f7c1;
-  /* border: 3px solid #fafa01; */
-  backdrop-filter: blur(10px); 
-  -webkit-backdrop-filter: blur(10px); 
-  background-color: rgba(255, 255, 255, 0.05);
-}
-.games-page-shapememory-game:hover{
-  background-color: rgba(255, 255, 255, 0.5);
-}
-.games-page-letterbridge-game {
-  background: #d8ace9;
-  /* border: 3px solid #bb01ff; */
-  backdrop-filter: blur(10px); 
-  -webkit-backdrop-filter: blur(10px); 
-  background-color: rgba(255, 255, 255, 0.05);
-}
-.games-page-letterbridge-game:hover{
-  background-color: rgba(255, 255, 255, 0.5);
-}
-.games-page-mirrorword-game {
-  background: #f8dbdb;
-  /* border: 3px solid #ff0101; */
-  backdrop-filter: blur(10px); 
-  -webkit-backdrop-filter: blur(10px); 
-  background-color: rgba(255, 255, 255, 0.05);
-}
-.games-page-mirrorword-game:hover{
-  background-color: rgba(255, 255, 255, 0.5);
-}
-/* Phoneme Tap Game card */
-.games-page-phonemetap-game {
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  background-color: rgba(224, 231, 255, 0.4);
-}
-.games-page-phonemetap-game:hover { background-color: rgba(224, 231, 255, 0.7); }
-
-/* Letter Sound Match card */
-.games-page-lettersound-game {
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  background-color: rgba(209, 250, 229, 0.4);
-}
-.games-page-lettersound-game:hover { background-color: rgba(209, 250, 229, 0.7); }
-
-/* Verbal Sequence Memory card */
-.games-page-verbalmemory-game {
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  background-color: rgba(224, 231, 255, 0.45);
-}
-.games-page-verbalmemory-game:hover { background-color: rgba(224, 231, 255, 0.75); }
-
-/* Confusable Letter Trainer card */
-.games-page-confusable-game {
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  background-color: rgba(237, 233, 254, 0.45);
-}
-.games-page-confusable-game:hover { background-color: rgba(237, 233, 254, 0.75); }
-
-/* Rapid Naming (RAN) card */
-.games-page-ran-game {
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  background-color: rgba(209, 250, 229, 0.45);
-}
-.games-page-ran-game:hover { background-color: rgba(209, 250, 229, 0.75); }
-
+/* ── Card imagery ───────────────────────────────────────────────────────── */
 .game-icon {
-  width: 210px;
-  height: 150px;
-  margin-bottom: 25px;
-  border-radius: 15%;
+  width: 130px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
-
-/* Emoji fallback when a game has no PNG asset */
 .game-icon-emoji {
-  font-size: 80px;
-  line-height: 150px;
+  font-size: 4.5rem;
+  line-height: 1;
   display: block;
-  width: 210px;
-  height: 150px;
-  text-align: center;
-  margin-bottom: 25px;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
 }
 
-/* Optional fun animation */
-/* @keyframes pop {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-} */
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .games-page-card { width: calc(50% - 16px); min-height: 180px; padding: 20px 12px; }
+  .game-icon        { width: 90px; height: 70px; }
+  .game-icon-emoji  { font-size: 3.2rem; }
+  .games-page-card h2 { font-size: 0.9rem; }
+}

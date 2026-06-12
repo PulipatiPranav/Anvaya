@@ -4,9 +4,10 @@ import "./WordPuzzleAdventure.css";
 import useEmotionDetection from "../hooks/useEmotionDetection";
 import useGameSessionLogger from "../hooks/useGameSessionLogger";
 import TTSButton from "../components/TTSButton";
+import GameShell from "../components/GameShell";
 import { API_BASE } from '../config/api';
 const WordPuzzleAdventure = () => {
-  const { emotion, videoRef, canvasRef } = useEmotionDetection();
+  const { emotion, confidence, videoRef, canvasRef } = useEmotionDetection();
   const [difficulty, setDifficulty] = useState("easy");
   const [shuffledWords, setShuffledWords] = useState([]);
   const [allFetchedWords, setAllFetchedWords] = useState([]);
@@ -166,14 +167,14 @@ const WordPuzzleAdventure = () => {
   }
 };
   return (
-    <div className="quiz-container">
+    <GameShell title="Word Quest" emotion={emotion} confidence={confidence}>
+    <div className="quiz-container" style={{ padding: 0, minHeight: 'auto' }}>
       <div className="game-card" style={{
     backgroundColor: getEmotionStyles(emotion).backgroundColor,
     color: getEmotionStyles(emotion).color,
     '--text-color': getEmotionStyles(emotion).color,
   }}>
         <h2 className="game-title">Word Puzzle Adventure</h2>
-        <p className="game-text emotion-text">Detected Emotion: {emotion}</p>
         <div className="tts-inline" style={{ justifyContent: "center", marginBottom: "6px" }}>
           <span className="game-text">Unscramble the letters to form the correct word!</span>
           <TTSButton text="Unscramble the letters to form the correct word!" size="sm" label="Read instructions aloud" />
@@ -203,17 +204,11 @@ const WordPuzzleAdventure = () => {
           </div>
         ) : (
           <>
-            <img
-              src={currentWordObj.image}
-              alt="word"
-              className="quiz-option-image"style={{
-    width: "200px",
-    height: "200px",
-    objectFit: "contain",
-    borderRadius: "12px",
-    margin: "10px auto"
-  }}
-            />
+            {currentWordObj.image && (
+              currentWordObj.image.startsWith('http')
+                ? <img src={currentWordObj.image} alt="word clue" className="word-puzzle-image" />
+                : <span className="word-puzzle-emoji" role="img" aria-label={currentWordObj.word}>{currentWordObj.image}</span>
+            )}
             <div className="word-slot-container">
               {selectedLetters.map((letter, index) => (
                 <div
@@ -261,6 +256,7 @@ const WordPuzzleAdventure = () => {
         <canvas ref={canvasRef} width={640} height={480} style={{ display: "none" }} />
       </div>
     </div>
+    </GameShell>
   );
 };
 

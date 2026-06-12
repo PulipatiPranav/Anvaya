@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { FaceMesh } from "@mediapipe/face_mesh";
 import { Camera } from "@mediapipe/camera_utils";
 import { applyEmotionTheme } from "../utils/EmotionThemeMap";
-import { ML_BASE } from "../config/api";
+import { API_BASE } from "../config/api";
 
 /**
  * useEmotionDetection — Phase A+B improved pipeline
@@ -55,7 +55,7 @@ const MIN_IOD_PX    = 20;  // Minimum inter-ocular distance in pixels to accept 
 
 const useEmotionDetection = ({
   intervalTime  = 500,
-  apiUrl        = `${ML_BASE}/predict`,
+  apiUrl        = `${API_BASE}/api/emotion/predict`,
   confThreshold = 0.55,
   holdFrames    = 2,
   emaAlpha      = 0.35,
@@ -127,10 +127,14 @@ const useEmotionDetection = ({
       const normalized = flat.map((v) => v / maxAbs);
 
       try {
+        const token = localStorage.getItem('token') || '';
         const response = await fetch(apiUrl, {
           method:  "POST",
-          headers: { "Content-Type": "application/json" },
-          body:    JSON.stringify({ landmarks: normalized }),
+          headers: {
+            "Content-Type":  "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({ landmarks: normalized }),
         });
 
         if (!response.ok) return;
