@@ -55,6 +55,13 @@ export default function Games() {
     <div className="games-page-container">
       <div className="games-topbar">
         <button
+          className="games-topbar-btn games-topbar-btn--progress"
+          onClick={() => navigate('/my-progress')}
+          aria-label="View my progress"
+        >
+          🌟 My Progress
+        </button>
+        <button
           className="games-topbar-btn games-topbar-btn--achievements"
           onClick={() => navigate('/achievements')}
           aria-label="View my achievements"

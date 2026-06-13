@@ -217,3 +217,40 @@
     font-size: var(--font-size-sm);
   }
 }
+
+/* Growth at a glance (therapist child-detail) */
+.growth-glance {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+.growth-glance__title { font-weight: 800; font-size: 1.05rem; margin-bottom: 12px; color: #1e293b; }
+.growth-glance__row { display: flex; flex-wrap: wrap; gap: 12px; }
+.growth-pill {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.growth-pill--meta { background: #eef2ff; border-color: #c7d2fe; }
+.growth-pill__label { font-size: 0.8rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+.growth-pill__val { font-size: 1.05rem; color: #0f172a; }
+.growth-pill__delta { font-size: 0.95rem; font-weight: 800; }
+.growth-pill__delta.up { color: #16a34a; }
+.growth-pill__delta.down { color: #dc2626; }
+.growth-pill__n { font-size: 0.78rem; color: #94a3b8; }
+.growth-glance__focus {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #ecfeff;
+  border: 1px solid #a5f3fc;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: #155e63;
+}

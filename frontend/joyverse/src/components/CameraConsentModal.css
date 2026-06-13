@@ -1,0 +1,86 @@
+.cc-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.cc-modal {
+  background: #fff;
+  border-radius: 22px;
+  max-width: 460px;
+  width: 100%;
+  padding: 30px 28px 22px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  font-family: var(--font-opendyslexic, inherit);
+}
+
+.cc-icon { font-size: 3rem; line-height: 1; }
+
+.cc-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 12px 0 8px;
+  color: #1f2937;
+}
+
+.cc-body {
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: #4b5563;
+  margin: 0 0 16px;
+}
+
+.cc-points {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto 22px;
+  text-align: left;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 1rem;
+  color: #374151;
+}
+
+.cc-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cc-btn {
+  padding: 14px 26px;
+  border-radius: 14px;
+  border: none;
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+.cc-btn:hover { transform: translateY(-2px); }
+
+.cc-btn--allow {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+}
+.cc-btn--deny {
+  background: #f3f4f6;
+  color: #374151;
+  border: 2px solid #d1d5db;
+}
+
+.cc-foot {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  margin: 16px 0 0;
+}

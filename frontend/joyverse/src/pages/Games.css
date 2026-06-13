@@ -165,3 +165,9 @@
   .games-topbar { justify-content: center; }
   .games-topbar-btn { font-size: 0.95rem; padding: 10px 16px; }
 }
+
+/* My Progress button (games topbar) */
+.games-topbar-btn--progress {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+}

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAccessibility } from '../context/AccessibilityContext';
 import SpeechService, { TTS_VOICES } from '../services/SpeechService';
+import { getConsent, setConsent, CONSENT_EVENT } from '../utils/cameraConsent';
 import './AccessibilitySettingsModal.css';
 
 const FONT_OPTIONS = [
@@ -29,6 +30,13 @@ const LINE_HEIGHT_OPTIONS = [
 export default function AccessibilitySettingsModal() {
   const { settings, updateSetting, resetSettings, modalOpen, setModalOpen } =
     useAccessibility();
+
+  const [cameraOn, setCameraOn] = useState(getConsent() === 'granted');
+  useEffect(() => {
+    const onChange = () => setCameraOn(getConsent() === 'granted');
+    window.addEventListener(CONSENT_EVENT, onChange);
+    return () => window.removeEventListener(CONSENT_EVENT, onChange);
+  }, []);
 
   if (!modalOpen) return null;
 
@@ -158,6 +166,25 @@ export default function AccessibilitySettingsModal() {
                 🔊 Preview
               </button>
             </div>
+          </section>
+
+          {/* Expression sensing (camera) — privacy-first, opt-in */}
+          <section className="a11y-section">
+            <h3 className="a11y-section-label">Expression Sensing</h3>
+            <label className="a11y-toggle-row">
+              <input
+                type="checkbox"
+                checked={cameraOn}
+                onChange={(e) => setConsent(e.target.checked ? 'granted' : 'denied')}
+                aria-label="Enable on-device expression sensing"
+              />
+              <span className="a11y-toggle-text">
+                Use the camera to gently adapt games to how I'm feeling.
+                <span className="a11y-toggle-note">
+                  Runs 100% on this device — no video or images are ever sent or saved.
+                </span>
+              </span>
+            </label>
           </section>
 
           {/* Live Preview */}

@@ -31,6 +31,7 @@ import sightWordsRoutes       from './Routes/sightWords.js';
 import morphologyRoutes       from './Routes/morphology.js';
 import ttsRoutes              from './Routes/tts.js';
 import adaptiveRoutes         from './Routes/adaptive.js';
+import progressRoutes         from './Routes/progress.js';
 
 // ── Startup guard ────────────────────────────────────────────────────────────
 if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
@@ -154,6 +155,7 @@ app.use('/api/fluency',             fluencyRoutes);
 app.use('/api/sight-words',         sightWordsRoutes);
 app.use('/api/morphology',          morphologyRoutes);
 app.use('/api/adaptive',            adaptiveRoutes);
+app.use('/api/progress',            progressRoutes);
 app.use('/api/adaptation-log',      adaptationLogRoutes);
 app.use('/api/assigned-sessions',   assignedSessionsRoutes);
 

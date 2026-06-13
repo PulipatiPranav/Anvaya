@@ -7,6 +7,7 @@ import { FaceMesh } from "@mediapipe/face_mesh";
 import { Camera } from "@mediapipe/camera_utils";
 import { applyEmotionTheme } from "../utils/EmotionThemeMap";
 import { classifyEmotion, EMOTION_CLASSES } from "../utils/GeometricEmotion";
+import { getConsent, CONSENT_EVENT } from "../utils/cameraConsent";
 
 /**
  * Emotion detection — FaceMesh + geometric expression classifier.
@@ -192,7 +193,20 @@ export function EmotionProvider({ children }) {
   const location = useLocation();
   let hasToken = false;
   try { hasToken = !!localStorage.getItem('token'); } catch (_) {}
-  const active = hasToken && CAMERA_PATHS.has(location.pathname);
+
+  // Expression sensing is opt-in: the camera only runs after explicit consent.
+  const [consent, setConsentState] = useState(getConsent());
+  useEffect(() => {
+    const onChange = () => setConsentState(getConsent());
+    window.addEventListener(CONSENT_EVENT, onChange);
+    window.addEventListener('storage', onChange);
+    return () => {
+      window.removeEventListener(CONSENT_EVENT, onChange);
+      window.removeEventListener('storage', onChange);
+    };
+  }, []);
+
+  const active = hasToken && consent === 'granted' && CAMERA_PATHS.has(location.pathname);
 
   const api = useEmotionDetectionInternal({ active });
 

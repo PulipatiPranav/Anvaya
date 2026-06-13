@@ -76,6 +76,7 @@ const TherapistDashboard = () => {
   const [verbalMemorySessions,   setVerbalMemorySessions]   = useState([]);
   const [selectedUsername,       setSelectedUsername]       = useState('');
   const [analyticsData,          setAnalyticsData]          = useState(null);
+  const [progressSummary,        setProgressSummary]        = useState(null);
   const [readingProgress,        setReadingProgress]        = useState(null);
   const [adaptationLogs,         setAdaptationLogs]         = useState([]);
   const [assignSessionChild,     setAssignSessionChild]     = useState(null);
@@ -126,14 +127,16 @@ const TherapistDashboard = () => {
 
       // Additional analytics + progression + adaptation
       try {
-        const [analyticsRes, rpRes, alRes] = await Promise.all([
+        const [analyticsRes, rpRes, alRes, progRes] = await Promise.all([
           axios.get(`${API_BASE}/api/analytics/${username}`),
           axios.get(`${API_BASE}/api/reading-progress/${username}`),
           axios.get(`${API_BASE}/api/adaptation-log?username=${username}&limit=20`),
+          axios.get(`${API_BASE}/api/progress/${username}`),
         ]);
         setAnalyticsData(analyticsRes.data);
         setReadingProgress(rpRes.data);
         setAdaptationLogs(alRes.data);
+        setProgressSummary(progRes.data);
         setOverrideLevel(rpRes.data?.currentLevel || '');
       } catch {
         // non-critical — continue showing what we have
@@ -465,6 +468,54 @@ const TherapistDashboard = () => {
             </button>
           </div>
           {sessionError && <p className="error-msg">{sessionError}</p>}
+
+          {progressSummary && progressSummary.summary.totalSessions > 0 && (
+            <div className="growth-glance">
+              <div className="growth-glance__title">📈 Growth at a glance</div>
+              <div className="growth-glance__row">
+                {[
+                  { key: 'phonics',       label: 'Phonics' },
+                  { key: 'fluency',       label: 'Reading speed' },
+                  { key: 'rapidNaming',   label: 'Rapid naming' },
+                  { key: 'workingMemory', label: 'Working memory' },
+                ].map(({ key, label }) => {
+                  const s = progressSummary.skills[key];
+                  if (!s || s.count === 0) return null;
+                  const d = s.deltaPct;
+                  const up = d != null && d > 0;
+                  const down = d != null && d < 0;
+                  return (
+                    <div key={key} className="growth-pill">
+                      <span className="growth-pill__label">{label}</span>
+                      <span className="growth-pill__val">
+                        {s.first} → <strong>{s.latest}</strong> {s.unit === '%' ? '%' : s.unit}
+                      </span>
+                      {d != null && (
+                        <span className={`growth-pill__delta ${up ? 'up' : down ? 'down' : ''}`}>
+                          {up ? '▲' : down ? '▼' : '—'} {Math.abs(d)}%
+                        </span>
+                      )}
+                      <span className="growth-pill__n">{s.count} sessions</span>
+                    </div>
+                  );
+                })}
+                <div className="growth-pill growth-pill--meta">
+                  <span className="growth-pill__label">Engagement</span>
+                  <span className="growth-pill__val">🔥 {progressSummary.summary.currentStreak}-day streak</span>
+                  <span className="growth-pill__n">
+                    {progressSummary.summary.sightWordsMastered} sight words mastered ·
+                    {' '}{progressSummary.summary.daysActive} active days
+                  </span>
+                </div>
+              </div>
+              {progressSummary.recommendedFocus && (
+                <div className="growth-glance__focus">
+                  <strong>Suggested focus:</strong> {progressSummary.recommendedFocus.label}
+                  {' '}— {progressSummary.recommendedFocus.reason}
+                </div>
+              )}
+            </div>
+          )}
 
           {selectedChildSessions.map((session, index) => (
             <div key={session._id} className="session-block">

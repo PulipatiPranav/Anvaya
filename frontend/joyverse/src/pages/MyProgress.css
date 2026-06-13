@@ -1,0 +1,115 @@
+.mp-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 16px 20px 60px;
+  font-family: var(--font-opendyslexic, inherit);
+  min-height: 100vh;
+}
+
+.mp-topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.mp-back, .mp-logout {
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: none;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mp-back { background: rgba(255,255,255,0.85); color: #4338ca; border: 2px solid rgba(99,102,241,0.3); }
+.mp-logout { background: rgba(255,255,255,0.85); color: #b91c1c; border: 2px solid rgba(185,28,28,0.35); }
+
+.mp-title {
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 900;
+  text-align: center;
+  margin: 8px 0 20px;
+  color: var(--text-primary, #1f2937);
+}
+
+.mp-msg { text-align: center; font-size: 1.15rem; color: #4b5563; }
+
+.mp-empty { text-align: center; padding: 30px; }
+.mp-empty-icon { font-size: 3.5rem; }
+.mp-empty p { font-size: 1.2rem; color: #4b5563; max-width: 420px; margin: 12px auto 20px; }
+.mp-cta, .mp-focus-btn {
+  padding: 14px 28px; border: none; border-radius: 14px; cursor: pointer;
+  font-family: inherit; font-size: 1.1rem; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+}
+
+/* Streak + goal */
+.mp-streak-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
+.mp-streak-card, .mp-goal-card {
+  background: rgba(255,255,255,0.85);
+  border-radius: 18px;
+  padding: 18px 22px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+.mp-streak-card { display: flex; flex-direction: column; align-items: center; min-width: 130px; }
+.mp-streak-num { font-size: 2.2rem; font-weight: 900; color: #ea580c; }
+.mp-streak-lbl { font-size: 1rem; color: #6b7280; font-weight: 600; }
+.mp-goal-card { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 8px; justify-content: center; }
+.mp-goal-lbl { font-weight: 700; color: #374151; }
+.mp-goal-bar { height: 14px; background: #e5e7eb; border-radius: 8px; overflow: hidden; }
+.mp-goal-fill { height: 100%; background: linear-gradient(90deg, #34d399, #10b981); transition: width 0.4s ease; }
+.mp-goal-txt { font-size: 0.95rem; color: #6b7280; font-weight: 600; }
+
+.mp-section-h {
+  font-size: 1.4rem; font-weight: 800; margin: 24px 0 12px; color: var(--text-primary, #1f2937);
+}
+
+/* Highlights */
+.mp-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.mp-chip {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #92400e; font-weight: 700; font-size: 1.05rem;
+  padding: 10px 18px; border-radius: 20px;
+}
+
+/* Skill cards */
+.mp-skill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+.mp-skill-card {
+  background: rgba(255,255,255,0.9);
+  border-radius: 18px;
+  border-top: 5px solid #6366f1;
+  padding: 18px 18px 16px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+.mp-skill-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.mp-skill-icon { font-size: 1.6rem; }
+.mp-skill-title { font-size: 1.15rem; font-weight: 800; color: #374151; }
+.mp-skill-val { font-size: 2.4rem; font-weight: 900; color: #1f2937; line-height: 1; }
+.mp-skill-unit { font-size: 1rem; font-weight: 700; color: #9ca3af; }
+.mp-spark { width: 100%; height: 36px; margin: 8px 0; display: block; }
+.mp-skill-foot { display: flex; justify-content: space-between; align-items: center; }
+.mp-skill-count { font-size: 0.85rem; color: #9ca3af; }
+.mp-skill-empty { color: #9ca3af; font-size: 0.95rem; margin: 12px 0; }
+
+.mp-delta { font-weight: 800; font-size: 1rem; }
+.mp-delta--up { color: #16a34a; }
+.mp-delta--down { color: #9ca3af; }   /* down is muted, not alarming — kids' app */
+.mp-delta--flat { color: #9ca3af; }
+
+/* Recommended focus */
+.mp-focus-card {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  background: linear-gradient(135deg, #ede9fe, #e0e7ff);
+  border-radius: 18px; padding: 20px 24px;
+}
+.mp-focus-text { display: flex; flex-direction: column; gap: 4px; }
+.mp-focus-text strong { font-size: 1.25rem; color: #4338ca; }
+.mp-focus-text span { color: #4b5563; }
+
+.mp-summary-foot {
+  text-align: center; margin-top: 26px; color: #6b7280; font-size: 0.95rem;
+}

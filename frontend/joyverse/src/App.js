@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "r
 import "./App.css";
 import { AccessibilityProvider, useAccessibility } from "./context/AccessibilityContext";
 import AccessibilitySettingsModal from "./components/AccessibilitySettingsModal";
+import CameraConsentModal from "./components/CameraConsentModal";
 import ErrorBoundary from "./components/ErrorBoundary";
 import SpeechService from "./services/SpeechService";
 import { EmotionProvider } from "./hooks/useEmotionDetection";
@@ -31,6 +32,7 @@ const ReadingFluency      = lazy(() => import("./pages/ReadingFluency"));
 const SightWordDrill      = lazy(() => import("./pages/SightWordDrill"));
 const MorphologyGame      = lazy(() => import("./pages/MorphologyGame"));
 const AchievementDashboard = lazy(() => import("./pages/AchievementDashboard"));
+const MyProgress           = lazy(() => import("./pages/MyProgress"));
 
 /** Friendly full-screen loader shown while a route chunk downloads. */
 function RouteLoading() {
@@ -95,6 +97,7 @@ function AppRoutes() {
           <Route path="/sight-words"         element={<SightWordDrill />} />
           <Route path="/morphology-builder"  element={<MorphologyGame />} />
           <Route path="/achievements"        element={<AchievementDashboard />} />
+          <Route path="/my-progress"         element={<MyProgress />} />
           <Route path="/therapistdashboard"  element={<TherapistDashboard />} />
           <Route path="/report/:childUsername" element={<ReportPage />} />
           <Route path="/superadmin"          element={<SuperAdminDashboard />} />
@@ -130,6 +133,7 @@ function App() {
           {/* Global accessibility modal + FAB rendered on every route */}
           <AccessibilitySettingsModal />
           <AccessibilityFAB />
+          <CameraConsentModal />
         </EmotionProvider>
       </Router>
     </AccessibilityProvider>
