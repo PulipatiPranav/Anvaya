@@ -90,6 +90,7 @@ const TherapistDashboard = () => {
   const [overrideLevel, setOverrideLevel] = useState('');
   const [overrideNote,  setOverrideNote]  = useState('');
   const [overrideMsg,   setOverrideMsg]   = useState('');
+  const [sessionFilter, setSessionFilter] = useState({ game: '', from: '', to: '', difficulty: '' });
 
   const therapistId = localStorage.getItem("therapistId");
   const navigate = useNavigate();
@@ -115,6 +116,7 @@ const TherapistDashboard = () => {
     setSelectedUsername(username);
     setShowSessionDetails(true);
     setSessionError('');
+    setSessionFilter({ game: '', from: '', to: '', difficulty: '' });
     try {
       // Single consolidated request replaces six parallel game-session fetches.
       const { data: bundle } = await axios.get(`${API_BASE}/api/analytics/${username}/sessions-bundle`);
@@ -469,9 +471,57 @@ const TherapistDashboard = () => {
           </div>
           {sessionError && <p className="error-msg">{sessionError}</p>}
 
+          {/* ── Session filters ──────────────────────────────────────── */}
+          {selectedChildSessions.length > 0 && (() => {
+            const gameNames = [...new Set(selectedChildSessions.map(s => s.gameName).filter(Boolean))];
+            return (
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', margin: '12px 0', padding: '12px 16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10 }}>
+                <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#475569' }}>Filter:</span>
+                <select
+                  value={sessionFilter.game}
+                  onChange={e => setSessionFilter(f => ({ ...f, game: e.target.value }))}
+                  style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                >
+                  <option value="">All games</option>
+                  {gameNames.map(g => <option key={g} value={g}>{g}</option>)}
+                </select>
+                <select
+                  value={sessionFilter.difficulty}
+                  onChange={e => setSessionFilter(f => ({ ...f, difficulty: e.target.value }))}
+                  style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                >
+                  <option value="">All difficulties</option>
+                  <option value="easy">Easy</option>
+                  <option value="medium">Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+                <label style={{ fontSize: '0.85rem', color: '#475569', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  From
+                  <input type="date" value={sessionFilter.from}
+                    onChange={e => setSessionFilter(f => ({ ...f, from: e.target.value }))}
+                    style={{ padding: '4px 6px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: '0.85rem' }} />
+                </label>
+                <label style={{ fontSize: '0.85rem', color: '#475569', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  To
+                  <input type="date" value={sessionFilter.to}
+                    onChange={e => setSessionFilter(f => ({ ...f, to: e.target.value }))}
+                    style={{ padding: '4px 6px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: '0.85rem' }} />
+                </label>
+                {(sessionFilter.game || sessionFilter.difficulty || sessionFilter.from || sessionFilter.to) && (
+                  <button
+                    onClick={() => setSessionFilter({ game: '', from: '', to: '', difficulty: '' })}
+                    style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid #cbd5e1', background: '#fff', fontSize: '0.82rem', cursor: 'pointer', color: '#64748b' }}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            );
+          })()}
+
           {progressSummary && progressSummary.summary.totalSessions > 0 && (
             <div className="growth-glance">
-              <div className="growth-glance__title">📈 Growth at a glance</div>
+              <div className="growth-glance__title">Growth at a glance</div>
               <div className="growth-glance__row">
                 {[
                   { key: 'phonics',       label: 'Phonics' },
@@ -517,39 +567,60 @@ const TherapistDashboard = () => {
             </div>
           )}
 
-          {selectedChildSessions.map((session, index) => (
-            <div key={session._id} className="session-block">
-              <h3>Session {index + 1}: {session.gameName} ({session.difficulty})</h3>
-              <p><strong>Start:</strong> {new Date(session.startTime).toLocaleString()}</p>
-              <p><strong>End:</strong> {new Date(session.endTime).toLocaleString()}</p>
-              <p><strong>Score:</strong> {session.score}</p>
-              {session.moodAtStart && (
-                <p>
-                  <strong>Mood at start:</strong>{' '}
-                  <span style={{ textTransform: 'capitalize', fontWeight: 600, color: '#4a5568', background: '#eef0ff', borderRadius: '8px', padding: '2px 10px' }}>
-                    {session.moodAtStart}
-                  </span>
-                </p>
-              )}
-              {session.phonicsLevel && (
-                <p>
-                  <strong>Phonics level:</strong>{' '}
-                  <span style={{ fontWeight: 600, color: '#1a4731', background: '#d1fae5', borderRadius: '8px', padding: '2px 10px' }}>
-                    {session.phonicsLevel}
-                  </span>
-                </p>
-              )}
-              <EmotionTimelineChart expressions={session.expressions} />
-              <EmotionBarChart expressions={session.expressions} />
-              <EmotionPercentageList expressions={session.expressions} />
-            </div>
-          ))}
+          {(() => {
+            const filtered = selectedChildSessions.filter(s => {
+              if (sessionFilter.game && s.gameName !== sessionFilter.game) return false;
+              if (sessionFilter.difficulty && s.difficulty !== sessionFilter.difficulty) return false;
+              if (sessionFilter.from && new Date(s.startTime) < new Date(sessionFilter.from)) return false;
+              if (sessionFilter.to && new Date(s.startTime) > new Date(sessionFilter.to + 'T23:59:59')) return false;
+              return true;
+            });
+            if (filtered.length === 0 && selectedChildSessions.length > 0) {
+              return <p style={{ color: '#6b7280', fontSize: '0.9rem', margin: '16px 0' }}>No sessions match the current filters.</p>;
+            }
+            return filtered.map((session, index) => (
+              <div key={session._id} className="session-block">
+                <h3>Session {index + 1}: {session.gameName} ({session.difficulty})</h3>
+                <p><strong>Start:</strong> {new Date(session.startTime).toLocaleString()}</p>
+                <p><strong>End:</strong> {new Date(session.endTime).toLocaleString()}</p>
+                <p><strong>Score:</strong> {session.score}</p>
+                {session.moodAtStart && (
+                  <p>
+                    <strong>Mood at start:</strong>{' '}
+                    <span style={{ textTransform: 'capitalize', fontWeight: 600, color: '#4a5568', background: '#eef0ff', borderRadius: '8px', padding: '2px 10px' }}>
+                      {session.moodAtStart}
+                    </span>
+                  </p>
+                )}
+                {session.phonicsLevel && (
+                  <p>
+                    <strong>Phonics level:</strong>{' '}
+                    <span style={{ fontWeight: 600, color: '#1a4731', background: '#d1fae5', borderRadius: '8px', padding: '2px 10px' }}>
+                      {session.phonicsLevel}
+                    </span>
+                  </p>
+                )}
+                {session.expressions && session.expressions.length > 0 && (
+                  <details style={{ marginTop: '8px' }}>
+                    <summary style={{ cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', color: '#4338ca', userSelect: 'none' }}>
+                      Emotion data ({session.expressions.length} samples)
+                    </summary>
+                    <div style={{ marginTop: '8px' }}>
+                      <EmotionTimelineChart expressions={session.expressions} />
+                      <EmotionBarChart expressions={session.expressions} />
+                      <EmotionPercentageList expressions={session.expressions} />
+                    </div>
+                  </details>
+                )}
+              </div>
+            ));
+          })()}
 
           {/* ── Phoneme Tap Analytics ─────────────────────────────── */}
           {phonemeTapSessions.length > 0 && (
             <div style={{ marginTop: '32px' }}>
               <h3 style={{ color: '#3730a3', borderBottom: '2px solid #e0e7ff', paddingBottom: '6px' }}>
-                👂 Phoneme Tap Sessions ({phonemeTapSessions.length})
+                Phoneme Tap Sessions ({phonemeTapSessions.length})
               </h3>
               {phonemeTapSessions.map((pt, i) => (
                 <div key={pt._id} className="session-block" style={{ borderLeft: '4px solid #6366f1' }}>
@@ -603,7 +674,7 @@ const TherapistDashboard = () => {
           {letterSoundSessions.length > 0 && (
             <div style={{ marginTop: '32px' }}>
               <h3 style={{ color: '#065f46', borderBottom: '2px solid #d1fae5', paddingBottom: '6px' }}>
-                🔤 Letter Sound Sessions ({letterSoundSessions.length})
+                Letter Sound Sessions ({letterSoundSessions.length})
               </h3>
               {letterSoundSessions.map((ls, i) => (
                 <div key={ls._id} className="session-block" style={{ borderLeft: '4px solid #10b981' }}>
@@ -661,7 +732,7 @@ const TherapistDashboard = () => {
           {confusableSessions.length > 0 && (
             <div style={{ marginTop: '32px' }}>
               <h3 style={{ color: '#3730a3', borderBottom: '2px solid #e0e7ff', paddingBottom: '6px' }}>
-                🔡 Letter Trainer Sessions ({confusableSessions.length})
+                Letter Trainer Sessions ({confusableSessions.length})
               </h3>
               {confusableSessions.map((cs, i) => {
                 const pairAcc = cs.pairAccuracy
@@ -761,7 +832,7 @@ const TherapistDashboard = () => {
           {ranSessions.length > 0 && (
             <div style={{ marginTop: '32px' }}>
               <h3 style={{ color: '#065f46', borderBottom: '2px solid #a7f3d0', paddingBottom: '6px' }}>
-                ⚡ Rapid Naming Sessions ({ranSessions.length})
+                Rapid Naming Sessions ({ranSessions.length})
               </h3>
               {ranSessions.map((rs, i) => (
                 <div key={rs._id} className="session-block" style={{ borderLeft: '4px solid #10b981' }}>
@@ -824,7 +895,7 @@ const TherapistDashboard = () => {
           {verbalMemorySessions.length > 0 && (
             <div style={{ marginTop: '32px' }}>
               <h3 style={{ color: '#312e81', borderBottom: '2px solid #c7d2fe', paddingBottom: '6px' }}>
-                🧠 Verbal Sequence Memory Sessions ({verbalMemorySessions.length})
+                Verbal Sequence Memory Sessions ({verbalMemorySessions.length})
               </h3>
               {verbalMemorySessions.map((vm, i) => (
                 <div key={vm._id} className="session-block" style={{ borderLeft: '4px solid #6366f1' }}>
@@ -919,7 +990,7 @@ const TherapistDashboard = () => {
           {readingProgress && (
             <div style={{ marginTop: '32px' }}>
               <h3 style={{ color: '#065f46', borderBottom: '2px solid #a7f3d0', paddingBottom: '6px' }}>
-                📚 Reading Level Progression
+                Reading Level Progression
               </h3>
               <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
                 <span style={{ background: '#d1fae5', color: '#065f46', fontWeight: 800, fontSize: '1.05rem', padding: '4px 16px', borderRadius: 20, border: '2px solid #10b981' }}>
@@ -978,7 +1049,7 @@ const TherapistDashboard = () => {
           {analyticsData && (
             <div style={{ marginTop: '32px' }}>
               <h3 style={{ color: '#1e40af', borderBottom: '2px solid #bfdbfe', paddingBottom: '6px' }}>
-                📊 Analytics Trends
+                Analytics Trends
               </h3>
               {analyticsData.phonemeAccuracy && analyticsData.phonemeAccuracy.length > 1 && (
                 <div style={{ marginBottom: 24 }}>
@@ -1085,7 +1156,7 @@ const TherapistDashboard = () => {
           {adaptationLogs.length > 0 && (
             <div style={{ marginTop: '32px' }}>
               <h3 style={{ color: '#6d28d9', borderBottom: '2px solid #ede9fe', paddingBottom: '6px' }}>
-                🤖 AI Adaptation Log ({adaptationLogs.length} events)
+                AI Adaptation Log ({adaptationLogs.length} events)
               </h3>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
                 <thead>

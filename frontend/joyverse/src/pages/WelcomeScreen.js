@@ -7,11 +7,11 @@ import "./WelcomeScreen.css";
 import { API_BASE } from "../config/api";
 
 const MOODS = [
-  { key: "happy",   label: "Happy",   icon: "/images/happy.png",   color: "#afe9b8", message: "Yay! You're feeling great! Keep smiling! 😄",              emotion: "Happy"   },
-  { key: "smile",   label: "Smiley",  icon: "/images/smile.png",   color: "#f9d2af", message: "Nice! A smile makes everything better 😊",                 emotion: "Happy"   },
-  { key: "neutral", label: "Okay",    icon: "/images/neutral.png", color: "#f8f09f", message: "That's okay! Let's make your day better 🙂",               emotion: "Neutral" },
-  { key: "sad",     label: "Sad",     icon: "/images/sad.png",     color: "#7981fa", message: "Oh no! Big hugs coming your way 🤗",                       emotion: "Sad"     },
-  { key: "angry",   label: "Angry",   icon: "/images/angry.png",   color: "#f7a0a0", message: "It's okay to feel angry. Take deep breaths 🌈",            emotion: "Angry"   },
+  { key: "happy",   label: "Happy",   icon: "/images/happy.png",   color: "#afe9b8", message: "Yay! You're feeling great! Keep smiling!",              emotion: "Happy"   },
+  { key: "smile",   label: "Smiley",  icon: "/images/smile.png",   color: "#f9d2af", message: "Nice! A smile makes everything better.",                   emotion: "Happy"   },
+  { key: "neutral", label: "Okay",    icon: "/images/neutral.png", color: "#f8f09f", message: "That's okay! Let's make your day better.",                 emotion: "Neutral" },
+  { key: "sad",     label: "Sad",     icon: "/images/sad.png",     color: "#7981fa", message: "Oh no! Big hugs coming your way.",                         emotion: "Sad"     },
+  { key: "angry",   label: "Angry",   icon: "/images/angry.png",   color: "#f7a0a0", message: "It's okay to feel angry. Take deep breaths.",              emotion: "Angry"   },
 ];
 
 const HOW_ARE_YOU = "How are you feeling today?";
@@ -62,7 +62,7 @@ export default function WelcomeScreen() {
     applyEmotionTheme(mood.emotion);
   };
 
-  const welcomeStr = `Welcome back, ${username}! 👋`;
+  const welcomeStr = `Welcome back, ${username}!`;
 
   return (
     <div className="welcomescreen">
@@ -120,7 +120,7 @@ export default function WelcomeScreen() {
       {/* ── Today's Session panel ──────────────────────────────────────────── */}
       {todaySession && (
         <section className="todays-session-panel" aria-label="Today's assigned session">
-          <h3>📋 Today's Session</h3>
+          <h3>Today's Session</h3>
           {todaySession.instructions && (
             <p className="session-instructions">{todaySession.instructions}</p>
           )}

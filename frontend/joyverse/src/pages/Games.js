@@ -53,33 +53,33 @@ export default function Games() {
 
   return (
     <div className="games-page-container">
-      <div className="games-topbar">
-        <button
-          className="games-topbar-btn games-topbar-btn--progress"
-          onClick={() => navigate('/my-progress')}
-          aria-label="View my progress"
-        >
-          🌟 My Progress
-        </button>
-        <button
-          className="games-topbar-btn games-topbar-btn--achievements"
-          onClick={() => navigate('/achievements')}
-          aria-label="View my achievements"
-        >
-          🏆 My Achievements
-        </button>
-        <button
-          className="games-topbar-btn games-topbar-btn--logout"
-          onClick={logout}
-          aria-label="Log out and return to login"
-        >
-          🚪 Logout
-        </button>
-      </div>
-
       <section className="header-container">
         <h1 className="games-page-title">Choose Your Game</h1>
-        <p className="games-page-subtitle">Pick a game and start learning! 🚀</p>
+        <p className="games-page-subtitle">Pick a game and start learning!</p>
+
+        <div className="games-header-nav">
+          <button
+            className="games-nav-btn games-nav-btn--progress"
+            onClick={() => navigate('/my-progress')}
+            aria-label="View my progress"
+          >
+            🌟 My Progress
+          </button>
+          <button
+            className="games-nav-btn games-nav-btn--achievements"
+            onClick={() => navigate('/achievements')}
+            aria-label="View my achievements"
+          >
+            🏆 My Achievements
+          </button>
+          <button
+            className="games-nav-btn games-nav-btn--logout"
+            onClick={logout}
+            aria-label="Log out and return to login"
+          >
+            🚪 Logout
+          </button>
+        </div>
       </section>
 
       <div className="games-page-list" role="list">

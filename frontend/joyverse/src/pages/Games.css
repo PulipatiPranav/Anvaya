@@ -8,7 +8,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 50px;
+  gap: 40px;
   font-family: var(--font-opendyslexic);
 }
 
@@ -25,6 +25,48 @@
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.4);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Nav row (bottom of header) ──────────────────────────────────────────── */
+.games-header-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.45);
+  width: 100%;
+}
+
+.games-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 20px;
+  border-radius: 10px;
+  border: none;
+  font-family: var(--font-opendyslexic, inherit);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.games-nav-btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
+.games-nav-btn--progress {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+}
+.games-nav-btn--achievements {
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  color: #fff;
+}
+.games-nav-btn--logout {
+  background: rgba(255, 255, 255, 0.85);
+  color: #b91c1c;
+  border: 1.5px solid rgba(185, 28, 28, 0.3);
 }
 
 .games-page-title {
@@ -129,45 +171,6 @@
   .games-page-card h2 { font-size: 0.9rem; }
 }
 
-/* Top action bar (achievements + logout) on the games dashboard */
-.games-topbar {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 16px 20px 0;
-  flex-wrap: wrap;
-}
-.games-topbar-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 22px;
-  border-radius: 14px;
-  border: none;
-  font-family: var(--font-opendyslexic, inherit);
-  font-size: 1.05rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.15s ease, filter 0.15s ease;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
-}
-.games-topbar-btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
-.games-topbar-btn--achievements {
-  background: linear-gradient(135deg, #f59e0b, #f97316);
-  color: #fff;
-}
-.games-topbar-btn--logout {
-  background: rgba(255, 255, 255, 0.85);
-  color: #b91c1c;
-  border: 2px solid rgba(185, 28, 28, 0.35);
-}
 @media (max-width: 480px) {
-  .games-topbar { justify-content: center; }
-  .games-topbar-btn { font-size: 0.95rem; padding: 10px 16px; }
-}
-
-/* My Progress button (games topbar) */
-.games-topbar-btn--progress {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #fff;
+  .games-nav-btn { font-size: 0.82rem; padding: 7px 13px; }
 }
