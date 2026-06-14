@@ -21,3 +21,6 @@ workingScreenshots/
 
 # Transient NTFS/FUSE artifacts (open handles to deleted files)
 .fuse_hidden*
+
+# Log files
+*.log

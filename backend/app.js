@@ -130,6 +130,16 @@ app.use(generalLimiter);
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 
+// Health check — for load balancers / uptime monitors / deploy platforms.
+app.get('/api/health', (req, res) => {
+  const dbState = mongoose.connection.readyState; // 1 = connected
+  res.status(dbState === 1 ? 200 : 503).json({
+    status: dbState === 1 ? 'ok' : 'degraded',
+    db: dbState === 1 ? 'connected' : 'disconnected',
+    uptime: Math.round(process.uptime()),
+  });
+});
+
 // Public — no auth required
 app.use('/api/auth',           loginLimiter, authRoutes);
 
@@ -179,4 +189,5 @@ app.use((err, req, res, _next) => {
   return res.status(err.status || 500).json({ error: err.message });
 });
 
-app.listen(4000, () => console.log('[server] Running on port 4000'));
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => console.log(`[server] Running on port ${PORT}`));
