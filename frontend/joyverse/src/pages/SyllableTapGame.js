@@ -5,6 +5,7 @@ import useEmotionDetection from "../hooks/useEmotionDetection";
 import useGameSessionLogger from "../hooks/useGameSessionLogger";
 import TTSButton from "../components/TTSButton";
 import GameShell from "../components/GameShell";
+import FeedbackGif from "../components/FeedbackGif";
 import { API_BASE } from '../config/api';
 // const hardcodedWords = {
 //   easy: [
@@ -144,6 +145,7 @@ const handleDifficultyChange = (e) => {
 
   return (
   <GameShell title="Fun with Syllables" emotion={emotion} confidence={confidence}>
+  <FeedbackGif result={feedback && feedback.startsWith('✅') ? 'correct' : feedback && feedback.startsWith('❌') ? 'wrong' : null} />
   <div className="game-container" style={{ padding: 0 }}>
   <div className="game-card" style={{
     backgroundColor: getEmotionStyles(emotion).backgroundColor,
