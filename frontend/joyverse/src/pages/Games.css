@@ -171,3 +171,23 @@
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: #fff;
 }
+
+/* ── Redesign pass: tap feedback, readable labels, gentle entrance ──────────── */
+/* Touch users don't hover — give a clear pressed state. */
+.games-page-card:active {
+  transform: translateY(-2px) scale(0.99);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+}
+/* Larger game names (the key label for a child). */
+.games-page-card h2 { font-size: 1.25rem; }
+@media (max-width: 600px) {
+  .games-page-card h2 { font-size: 1rem; }
+}
+/* Soft, reassuring entrance (auto-disabled under prefers-reduced-motion). */
+.games-page-card {
+  animation: games-card-in 0.4s ease both;
+}
+@keyframes games-card-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

@@ -75,7 +75,17 @@ export default function MyProgress() {
 
       <h1 className="mp-title">My Progress 🌟</h1>
 
-      {state === 'loading' && <p className="mp-msg">Loading your progress…</p>}
+      {state === 'loading' && (
+        <div className="mp-skeleton" aria-label="Loading your progress" aria-busy="true">
+          <div className="skeleton mp-skel-streak" />
+          <div className="mp-skel-grid">
+            <div className="skeleton mp-skel-card" />
+            <div className="skeleton mp-skel-card" />
+            <div className="skeleton mp-skel-card" />
+            <div className="skeleton mp-skel-card" />
+          </div>
+        </div>
+      )}
       {state === 'error' && <p className="mp-msg">Couldn't load your progress right now. Try again soon!</p>}
 
       {state === 'empty' && (

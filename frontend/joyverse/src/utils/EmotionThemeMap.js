@@ -123,6 +123,18 @@ export function applyEmotionTheme(emotion) {
   const theme = EmotionThemeMap[emotion];
   if (!theme) return;
 
+  // Expose the mood to CSS so the UI can tune visual intensity / motion
+  // (calming for Angry/Sad, vibrant for Happy/Surprise) — see global.css.
+  document.documentElement.setAttribute('data-emotion', emotion);
+
+  // Respect the user's reduced-motion preference: swap the crossfade for an
+  // instant change so nothing animates for vestibular-sensitive children.
+  const reduceMotion =
+    typeof window !== 'undefined' &&
+    window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fade = reduceMotion ? 'none' : 'opacity 0.85s ease';
+
   const [layerA, layerB] = _ensureLayers();
 
   // Strip any direct body background so the layers show through
@@ -141,13 +153,15 @@ export function applyEmotionTheme(emotion) {
     _initialised = true;
     // Restore transition after next paint
     requestAnimationFrame(() => {
-      layerA.style.transition = 'opacity 0.85s ease';
+      layerA.style.transition = fade;
     });
   } else {
     // Subsequent calls — crossfade between layers
     const front = _activeLayer === 'a' ? layerA : layerB;
     const back  = _activeLayer === 'a' ? layerB : layerA;
 
+    front.style.transition = fade;
+    back.style.transition  = fade;
     back.style.backgroundImage = theme.backgroundImage;
     back.style.zIndex = '-1';
     front.style.zIndex = '-2';

@@ -113,3 +113,13 @@
 .mp-summary-foot {
   text-align: center; margin-top: 26px; color: #6b7280; font-size: 0.95rem;
 }
+
+/* Loading skeleton */
+.mp-skeleton { display: flex; flex-direction: column; gap: 22px; }
+.mp-skel-streak { height: 90px; border-radius: 18px; }
+.mp-skel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+.mp-skel-card { height: 170px; border-radius: 18px; }
