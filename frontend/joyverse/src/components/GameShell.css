@@ -23,15 +23,16 @@
 }
 
 .game-shell__back {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.75);
-  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  min-height: 48px;            /* comfortable child / touch tap target */
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1.5px solid rgba(0, 0, 0, 0.18);
   border-radius: 50px;
   font-family: var(--font-opendyslexic, sans-serif);
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1e1b4b;
   cursor: pointer;
@@ -43,29 +44,30 @@
 }
 
 .game-shell__title {
-  font-size: 1.15rem;
+  font-size: 1.3rem;
   font-weight: 800;
   color: #1e1b4b;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.6);
   margin: 0;
 }
 
 .game-shell__emotion-badge {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1.5px solid rgba(0, 0, 0, 0.1);
+  min-height: 40px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
   border-radius: 50px;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  color: #374151;
+  color: #1f2937;
   font-family: var(--font-opendyslexic, sans-serif);
 }
 .game-shell__emotion-badge small {
-  font-size: 0.7rem;
-  color: #6b7280;
+  font-size: 0.8rem;
+  color: #4b5563;          /* raised from #6b7280 for AA contrast */
   margin-left: 2px;
 }
 

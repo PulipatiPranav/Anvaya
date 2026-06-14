@@ -4,6 +4,7 @@ import './LetterSoundGame.css';
 import useEmotionDetection from '../hooks/useEmotionDetection';
 import useGameSessionLogger from '../hooks/useGameSessionLogger';
 import GameShell from '../components/GameShell';
+import FeedbackGif from '../components/FeedbackGif';
 import TTSButton from '../components/TTSButton';
 import SpeechService from '../services/SpeechService';
 import { PHONICS_LEVEL_ORDER, PhonicsLevelMeta } from '../constants/PhonicsLevel';
@@ -240,6 +241,7 @@ export default function LetterSoundGame() {
 
   return (
     <GameShell title="Letter Sound Match" emotion={emotion} confidence={confidence}>
+      <FeedbackGif result={selected && current ? (selected === current.correct ? 'correct' : 'wrong') : null} />
       <div className="lsg-container">
         <div className="lsg-card" style={cardStyle}>
           <div className="lsg-controls">

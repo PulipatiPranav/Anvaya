@@ -92,9 +92,10 @@ badges, and a weekly highlights summary. These are designed to encourage
 JoyVerse can use the webcam to read facial expressions and gently adapt games to
 how a learner is feeling. This is built privacy-first:
 
-- **On-device only.** Facial-landmark detection (MediaPipe) and the expression
-  classifier (a transparent geometric model — see `utils/GeometricEmotion.js`)
-  run entirely in the browser.
+- **On-device only.** Facial analysis (MediaPipe Face Landmarker, which outputs
+  52 ML "blendshape" coefficients such as `mouthSmile` and `browDown`) and the
+  expression classifier (`utils/BlendshapeEmotion.js`, with a geometric model as
+  fallback) run entirely in the browser. Only the model files load from a CDN.
 - **Nothing is uploaded or stored.** No video frames or images ever leave the
   device or reach the server. Only a coarse expression label (e.g. "happy",
   "frustrated") is used in the moment and, optionally, logged as an aggregate

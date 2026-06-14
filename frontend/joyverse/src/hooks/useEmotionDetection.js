@@ -3,36 +3,39 @@ import {
   createContext, useContext,
 } from "react";
 import { useLocation } from "react-router-dom";
-import { FaceMesh } from "@mediapipe/face_mesh";
 import { Camera } from "@mediapipe/camera_utils";
 import { applyEmotionTheme } from "../utils/EmotionThemeMap";
 import { classifyEmotion, EMOTION_CLASSES } from "../utils/GeometricEmotion";
+import { classifyFromBlendshapes } from "../utils/BlendshapeEmotion";
 import { getConsent, CONSENT_EVENT } from "../utils/cameraConsent";
 
+// MediaPipe Face Landmarker assets (loaded on-device; only model files come
+// from the CDN — no user data is ever sent). Pinned to the installed version.
+const MP_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm';
+const MP_MODEL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
+
 /**
- * Emotion detection — FaceMesh + geometric expression classifier.
+ * Emotion detection — MediaPipe Face Landmarker (blendshapes) + classifier.
  *
  * Architecture (persistent webcam):
  *   The camera + classifier run in ONE place — <EmotionProvider>, mounted once
  *   in App above the routes. Because the provider never unmounts while the app
  *   is open, the webcam stays on across game navigation (no on/off flicker).
- *   It is gated by route so the camera is only active inside the child games
- *   area and is off on login / therapist / admin screens.
+ *   It is gated by route AND by explicit consent, so the camera is only active
+ *   inside the child games area after the user opts in (off on login /
+ *   therapist / admin screens, and off entirely until consent is granted).
  *
  *   Games keep calling useEmotionDetection() exactly as before and receive the
  *   same { emotion, confidence, videoRef, canvasRef, ... } shape — but emotion
  *   comes from the shared provider and the refs they render are inert.
  *
- * Emotion itself is computed locally from FaceMesh landmark geometry (see
- * utils/GeometricEmotion.js) — no ML server required.
+ * Emotion is computed on-device from the Face Landmarker's 52 ML blendshape
+ * coefficients (see utils/BlendshapeEmotion.js), with the geometric classifier
+ * (utils/GeometricEmotion.js) kept as a fallback. No ML server is involved and
+ * no video or images ever leave the device — only model files load from a CDN.
  */
 
 const NUM_CLASSES = EMOTION_CLASSES.length;
-
-// Landmark quality gate
-const LEFT_EYE_IDX  = 33;
-const RIGHT_EYE_IDX = 263;
-const MIN_IOD_PX    = 20;
 
 // ── Internal hook: owns the camera + classification. Gated by `active`. ────────
 function useEmotionDetectionInternal({
@@ -59,41 +62,17 @@ function useEmotionDetectionInternal({
   useEffect(() => {
     if (!active) return;             // camera off outside the games area
 
-    const video  = videoRef.current;
-    const canvas = canvasRef.current;
-    const ctx    = canvas?.getContext("2d");
-    if (!video || !canvas || !ctx) return;
+    const video = videoRef.current;
+    if (!video) return;
 
-    const faceMesh = new FaceMesh({
-      locateFile: (file) =>
-        `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
-    });
+    let camera = null;
+    let landmarker = null;
+    let cancelled = false;
 
-    faceMesh.setOptions({
-      maxNumFaces:            1,
-      refineLandmarks:        true,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence:  0.5,
-    });
-
-    faceMesh.onResults((results) => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      if (!results.multiFaceLandmarks?.length) return;
-
-      const landmarksArray = results.multiFaceLandmarks[0];
-      const now = Date.now();
-      if (now - lastPredictionTime.current < intervalTime) return;
-      lastPredictionTime.current = now;
-
-      const toPixel = (lm) => [lm.x * canvas.width, lm.y * canvas.height];
-      const leftEyePx  = toPixel(landmarksArray[LEFT_EYE_IDX]);
-      const rightEyePx = toPixel(landmarksArray[RIGHT_EYE_IDX]);
-      const iod = Math.hypot(rightEyePx[0] - leftEyePx[0], rightEyePx[1] - leftEyePx[1]);
-      if (iod < MIN_IOD_PX) return;
-
-      const result = classifyEmotion(landmarksArray, canvas.width, canvas.height);
+    // Shared post-classification pipeline (EMA → hysteresis → state).
+    // Unchanged from the previous implementation — only the source of the
+    // probability vector (blendshapes instead of raw geometry) is new.
+    const ingest = (result) => {
       if (!result || result.probabilities.length !== NUM_CLASSES) return;
       const probs = result.probabilities;
 
@@ -124,18 +103,56 @@ function useEmotionDetectionInternal({
         setEmotion(winner);
         setConfidence(Math.round(maxConf * 100) / 100);
       }
-    });
+    };
 
-    const camera = new Camera(video, {
-      onFrame: async () => { await faceMesh.send({ image: video }); },
-      width:  640,
-      height: 480,
-    });
+    (async () => {
+      try {
+        // Loaded on demand (only after consent activates the camera), keeping
+        // the vision runtime out of the initial bundle.
+        const { FaceLandmarker, FilesetResolver } = await import('@mediapipe/tasks-vision');
+        const fileset = await FilesetResolver.forVisionTasks(MP_WASM);
+        landmarker = await FaceLandmarker.createFromOptions(fileset, {
+          baseOptions: { modelAssetPath: MP_MODEL, delegate: 'CPU' },
+          outputFaceBlendshapes: true,
+          runningMode: 'VIDEO',
+          numFaces: 1,
+        });
+        if (cancelled) { try { landmarker.close(); } catch (_) {} return; }
 
-    camera.start().catch(() => { /* camera unavailable — degrade silently */ });
+        camera = new Camera(video, {
+          onFrame: async () => {
+            if (!landmarker || cancelled || video.readyState < 2) return;
+            const now = Date.now();
+            if (now - lastPredictionTime.current < intervalTime) return;
+            lastPredictionTime.current = now;
+
+            let results;
+            try { results = landmarker.detectForVideo(video, performance.now()); }
+            catch (_) { return; }
+
+            const categories = results?.faceBlendshapes?.[0]?.categories;
+            let result = null;
+            if (categories && categories.length) {
+              result = classifyFromBlendshapes(categories);
+            } else if (results?.faceLandmarks?.[0]) {
+              // Fallback to the proven geometric classifier if no blendshapes.
+              result = classifyEmotion(results.faceLandmarks[0], 640, 480);
+            }
+            ingest(result);
+          },
+          width:  640,
+          height: 480,
+        });
+        camera.start().catch(() => { /* camera unavailable — degrade silently */ });
+      } catch (_) {
+        // tasks-vision / model failed to load — emotion sensing degrades silently
+      }
+    })();
+
     return () => {
-      try { camera.stop(); } catch (_) {}
-      try { faceMesh.close(); } catch (_) {}
+      cancelled = true;
+      try { camera?.stop(); } catch (_) {}
+      try { landmarker?.close(); } catch (_) {}
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, intervalTime, confThreshold, holdFrames, emaAlpha]);

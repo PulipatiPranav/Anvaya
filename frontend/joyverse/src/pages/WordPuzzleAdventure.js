@@ -5,6 +5,7 @@ import useEmotionDetection from "../hooks/useEmotionDetection";
 import useGameSessionLogger from "../hooks/useGameSessionLogger";
 import TTSButton from "../components/TTSButton";
 import GameShell from "../components/GameShell";
+import FeedbackGif from "../components/FeedbackGif";
 import { API_BASE } from '../config/api';
 const WordPuzzleAdventure = () => {
   const { emotion, confidence, videoRef, canvasRef } = useEmotionDetection();
@@ -168,6 +169,7 @@ const WordPuzzleAdventure = () => {
 };
   return (
     <GameShell title="Word Quest" emotion={emotion} confidence={confidence}>
+    <FeedbackGif result={!feedback ? null : feedback.startsWith('Correct') ? 'correct' : 'wrong'} />
     <div className="quiz-container" style={{ padding: 0, minHeight: 'auto' }}>
       <div className="game-card" style={{
     backgroundColor: getEmotionStyles(emotion).backgroundColor,

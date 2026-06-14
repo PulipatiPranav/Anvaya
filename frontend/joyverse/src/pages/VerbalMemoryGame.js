@@ -5,6 +5,7 @@ import useEmotionDetection from '../hooks/useEmotionDetection';
 import useGameSessionLogger from '../hooks/useGameSessionLogger';
 import SpeechService from '../services/SpeechService';
 import GameShell from '../components/GameShell';
+import FeedbackGif from '../components/FeedbackGif';
 import axios from 'axios';
 
 import { API_BASE } from '../config/api';
@@ -403,6 +404,7 @@ export default function VerbalMemoryGame() {
     const { correct, positionAccuracy, presented, recalled: rec } = roundResult;
     return (
       <GameShell title="Sequence Memory" emotion={emotion} confidence={confidence}>
+      <FeedbackGif result={correct ? 'correct' : 'wrong'} />
       <div className="vsm-container">
         <div className="vsm-card" style={cardStyle}>
           <div className="vsm-round-badge">Round {roundNum + 1} / {ROUNDS_PER_GAME}</div>

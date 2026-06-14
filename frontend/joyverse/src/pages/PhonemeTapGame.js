@@ -4,6 +4,7 @@ import './PhonemeTapGame.css';
 import useEmotionDetection from '../hooks/useEmotionDetection';
 import useGameSessionLogger from '../hooks/useGameSessionLogger';
 import GameShell from '../components/GameShell';
+import FeedbackGif from '../components/FeedbackGif';
 import TTSButton from '../components/TTSButton';
 import AdaptiveSuggestion from '../components/AdaptiveSuggestion';
 import useAdaptiveDifficulty from '../hooks/useAdaptiveDifficulty';
@@ -250,6 +251,7 @@ export default function PhonemeTapGame() {
 
   return (
     <GameShell title="Phoneme Tap" emotion={emotion} confidence={confidence}>
+      <FeedbackGif result={isCorrect ? 'correct' : isWrong ? 'wrong' : null} />
       <div className="ptg-container">
         <div className="ptg-card" style={cardStyle}>
           <div className="ptg-controls">

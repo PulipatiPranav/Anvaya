@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import GameShell from '../components/GameShell';
+import FeedbackGif from '../components/FeedbackGif';
 import useEmotionDetection from '../hooks/useEmotionDetection';
 import { getCardStyle } from '../utils/EmotionThemeMap';
 import SpeechService from '../services/SpeechService';
@@ -336,6 +337,7 @@ export default function MorphologyGame() {
 
   return (
     <GameShell title="Word Builder" emotion={emotion} confidence={confidence}>
+      <FeedbackGif result={answered ? (selectedOption === q.answer ? 'correct' : 'wrong') : null} />
       <div className="mg-container">
         <div className="gs-card" style={cardStyle}>
           <div className="mg-header-row">

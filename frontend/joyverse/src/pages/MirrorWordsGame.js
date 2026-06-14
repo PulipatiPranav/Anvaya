@@ -5,6 +5,7 @@ import useEmotionDetection from "../hooks/useEmotionDetection";
 import useGameSessionLogger from "../hooks/useGameSessionLogger";
 import TTSButton from "../components/TTSButton";
 import GameShell from "../components/GameShell";
+import FeedbackGif from "../components/FeedbackGif";
 import { API_BASE } from '../config/api';
 import { getCardStyle } from '../utils/EmotionThemeMap';
 
@@ -133,6 +134,7 @@ const MirrorWordsGame = () => {
 
   return (
     <GameShell title="Mirror Words" emotion={emotion} confidence={confidence}>
+      <FeedbackGif result={!feedback ? null : feedback.startsWith('Correct') ? 'correct' : 'wrong'} />
       <div className="mirror-game-container" style={cardStyle}>
         <div className="mirror-game-title">Mirror Words</div>
 

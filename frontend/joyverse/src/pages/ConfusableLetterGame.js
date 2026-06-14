@@ -4,6 +4,7 @@ import './ConfusableLetterGame.css';
 import useEmotionDetection from '../hooks/useEmotionDetection';
 import useGameSessionLogger from '../hooks/useGameSessionLogger';
 import GameShell from '../components/GameShell';
+import FeedbackGif from '../components/FeedbackGif';
 import SpeechService from '../services/SpeechService';
 import axios from 'axios';
 import { API_BASE } from '../config/api';
@@ -279,6 +280,7 @@ export default function ConfusableLetterGame() {
 
   return (
     <GameShell title="Letter Trainer" emotion={emotion} confidence={confidence}>
+      <FeedbackGif result={selected && current ? (selected === current.correct ? 'correct' : 'wrong') : null} />
       <div className="clg-container">
         <div className="clg-card" style={cardStyle}>
           <div className="clg-controls">

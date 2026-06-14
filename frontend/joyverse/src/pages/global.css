@@ -324,3 +324,87 @@ body {
   transition: transform 0.15s ease, filter 0.15s ease;
 }
 .dashboard-logout-btn:hover { transform: translateY(-2px); filter: brightness(1.03); }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   REDESIGN PASS — accessibility, reading comfort, emotional regulation
+   (additive; no font-family changes; see DESIGN_DECISIONS.md)
+   ════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Comfortable reading measure for dyslexic readers (~50–70 chars). */
+  --measure: 64ch;
+  /* Minimum accessible tap target (children / touch). */
+  --tap-min: 48px;
+  /* Emotion-tunable motion + intensity (overridden per data-emotion below). */
+  --ui-motion-scale: 1;
+}
+
+/* ── Reading comfort ──────────────────────────────────────────────────────────
+   Cap line length and give prose generous leading. Apply to prose containers. */
+.readable {
+  max-width: var(--measure);
+  margin-inline: auto;
+  line-height: 1.7;
+}
+p.readable, .readable p { line-height: 1.7; }
+
+/* ── Minimum tap target helper ──────────────────────────────────────────────── */
+.tap-target {
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+}
+
+/* ── Skeleton loader (reassuring, content-shaped loading) ─────────────────────── */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-md, 10px);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: skeleton-shimmer 1.3s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer { to { transform: translateX(100%); } }
+
+/* ── Emotional regulation: tune visual intensity to the detected mood ──────────
+   Calming moods (Angry, Sad) get lower-stimulation backgrounds and gentler,
+   slower motion. Uplifting moods (Happy, Surprise) keep their vibrancy.
+   data-emotion is set on <html> by applyEmotionTheme(). */
+html[data-emotion="Angry"] #jv-bg-a,
+html[data-emotion="Angry"] #jv-bg-b {
+  filter: saturate(0.6) brightness(1.08) contrast(0.95);
+}
+html[data-emotion="Sad"] #jv-bg-a,
+html[data-emotion="Sad"] #jv-bg-b {
+  filter: saturate(0.8) brightness(1.06);
+}
+html[data-emotion="Neutral"] #jv-bg-a,
+html[data-emotion="Neutral"] #jv-bg-b {
+  filter: saturate(0.9);
+}
+/* Calming moods slow celebratory motion so the screen feels soothing. */
+html[data-emotion="Angry"]  { --ui-motion-scale: 1.6; }
+html[data-emotion="Sad"]    { --ui-motion-scale: 1.35; }
+html[data-emotion="Surprise"], html[data-emotion="Happy"] { --ui-motion-scale: 1; }
+
+/* Make the celebratory "pop" feedback honor the emotional intensity. */
+.gs-feedback { animation-duration: calc(0.25s * var(--ui-motion-scale)); }
+
+/* ── prefers-reduced-motion: respect the OS / user setting everywhere ──────────
+   Critical for vestibular-sensitive and neurodivergent children. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  #jv-bg-a, #jv-bg-b { transition: none !important; }
+}
