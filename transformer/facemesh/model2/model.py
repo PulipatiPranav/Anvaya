@@ -74,7 +74,7 @@ app = Flask(__name__)
 import os as _os
 _allowed_origins = _os.getenv(
     "FLASK_CORS_ORIGINS",
-    "http://localhost:3000,http://localhost:4000,http://127.0.0.1:3000,http://127.0.0.1:4000"
+    "http://localhost:4000,http://127.0.0.1:4000"
 ).split(",")
 CORS(app, origins=_allowed_origins)
 
@@ -205,4 +205,4 @@ def predict():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5001, debug=False)
+    app.run(host="127.0.0.1", port=5000, debug=False)
