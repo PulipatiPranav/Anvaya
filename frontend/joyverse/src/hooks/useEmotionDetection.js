@@ -5,8 +5,9 @@ import {
 import { useLocation } from "react-router-dom";
 import { Camera } from "@mediapipe/camera_utils";
 import { applyEmotionTheme } from "../utils/EmotionThemeMap";
-import { classifyEmotion, EMOTION_CLASSES } from "../utils/GeometricEmotion";
-import { classifyFromBlendshapes } from "../utils/BlendshapeEmotion";
+import { EMOTION_CLASSES } from "../utils/GeometricEmotion";
+// import { classifyEmotion } from "../utils/GeometricEmotion";     // on-device fallback — disabled while using model2
+// import { classifyFromBlendshapes } from "../utils/BlendshapeEmotion"; // on-device blendshape — disabled while using model2
 import { getConsent, CONSENT_EVENT } from "../utils/cameraConsent";
 
 // MediaPipe Face Landmarker assets (loaded on-device; only model files come
@@ -130,15 +131,41 @@ function useEmotionDetectionInternal({
             try { results = landmarker.detectForVideo(video, performance.now()); }
             catch (_) { return; }
 
-            const categories = results?.faceBlendshapes?.[0]?.categories;
-            let result = null;
-            if (categories && categories.length) {
-              result = classifyFromBlendshapes(categories);
-            } else if (results?.faceLandmarks?.[0]) {
-              // Fallback to the proven geometric classifier if no blendshapes.
-              result = classifyEmotion(results.faceLandmarks[0], 640, 480);
+            // -- on-device classifiers disabled; model2 Flask server used instead --
+            // const categories = results?.faceBlendshapes?.[0]?.categories;
+            // let result = null;
+            // if (categories && categories.length) {
+            //   result = classifyFromBlendshapes(categories);
+            // } else if (results?.faceLandmarks?.[0]) {
+            //   result = classifyEmotion(results.faceLandmarks[0], 640, 480);
+            // }
+            // ingest(result);
+
+            if (results?.faceLandmarks?.[0]) {
+              const lms = results.faceLandmarks[0];
+              // Preprocessing to match model2 training format:
+              // 1. pixel coords, 2. relative to landmark 0, 3. normalize by max abs value
+              const pts = lms.map(p => [p.x * 640, p.y * 480]);
+              const [bx, by] = pts[0];
+              const rel = pts.flatMap(([x, y]) => [x - bx, y - by]);
+              const maxVal = Math.max(...rel.map(Math.abs));
+              const flat = maxVal > 0 ? rel.map(v => v / maxVal) : rel;
+              try {
+                const resp = await fetch('http://127.0.0.1:5001/predict', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ landmarks: flat }),
+                });
+                if (resp.ok) {
+                  const data = await resp.json();
+                  if (!data.low_confidence) {
+                    ingest({ probabilities: data.probabilities });
+                  }
+                }
+              } catch (_) {
+                // model2 server unavailable — degrade silently
+              }
             }
-            ingest(result);
           },
           width:  640,
           height: 480,
