@@ -6,7 +6,7 @@ import { getCardStyle } from '../utils/EmotionThemeMap';
 import SpeechService from '../services/SpeechService';
 import { API_BASE } from '../config/api';
 import axios from 'axios';
-import confetti from 'canvas-confetti';
+import useFeedbackEffect from '../hooks/useFeedbackEffect';
 import './MorphologyGame.css';
 
 const PREFIXES = [
@@ -156,6 +156,7 @@ function AffixHighlight({ word, affix, color }) {
 
 export default function MorphologyGame() {
   const { emotion, confidence, videoRef, canvasRef } = useEmotionDetection();
+  const triggerFeedback = useFeedbackEffect();
   const username = localStorage.getItem('username');
 
   const [phase, setPhase] = useState('setup'); // setup | playing | done
@@ -201,6 +202,7 @@ export default function MorphologyGame() {
     setAnswered(true);
 
     const correct = option === q.answer;
+    triggerFeedback(correct ? 'correct' : 'wrong');
     if (correct) {
       setScore(s => s + 10);
       SpeechService.speak('Correct!', { rate: 1 });
@@ -213,7 +215,7 @@ export default function MorphologyGame() {
       const next = currentQ + 1;
       if (next >= questions.length) {
         setPhase('done');
-        confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+        triggerFeedback('correct');
         // Save session
         axios.post(`${API_BASE}/api/morphology`, {
           username,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import confetti from "canvas-confetti";
+import useFeedbackEffect from '../hooks/useFeedbackEffect';
 import "./WordPuzzleAdventure.css";
 import useEmotionDetection from "../hooks/useEmotionDetection";
 import useGameSessionLogger from "../hooks/useGameSessionLogger";
@@ -9,6 +9,7 @@ import FeedbackGif from "../components/FeedbackGif";
 import { API_BASE } from '../config/api';
 const WordPuzzleAdventure = () => {
   const { emotion, confidence, videoRef, canvasRef } = useEmotionDetection();
+  const triggerFeedback = useFeedbackEffect();
   const [difficulty, setDifficulty] = useState("easy");
   const [shuffledWords, setShuffledWords] = useState([]);
   const [allFetchedWords, setAllFetchedWords] = useState([]);
@@ -32,7 +33,7 @@ const WordPuzzleAdventure = () => {
 
   useEffect(() => {
     if (gameCompleted) {
-    confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+    triggerFeedback('correct');
 
     (async () => {
       await endSession(score); 
@@ -101,6 +102,7 @@ const WordPuzzleAdventure = () => {
     if (!newSelection.includes("")) {
       const correctWord = shuffledWords[currentIndex].word;
       if (formedWord === correctWord) {
+        triggerFeedback('correct');
         setFeedback("Correct! 🎉");
         setScore(score + 20);
         setTimeout(() => {
@@ -108,6 +110,7 @@ const WordPuzzleAdventure = () => {
           nextWord();
         }, 1500);
       } else {
+        triggerFeedback('wrong');
         setFeedback("Oops! That's incorrect. ❌");
         setTimeout(() => {
           setFeedback("");

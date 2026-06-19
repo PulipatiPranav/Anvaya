@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import LineDrawer from '../components/LineDrawer';
 import './LetterBridge.css';
 import useEmotionDetection from "../hooks/useEmotionDetection";
+import useFeedbackEffect from '../hooks/useFeedbackEffect';
 import useGameSessionLogger from "../hooks/useGameSessionLogger";
 import TTSButton from "../components/TTSButton";
 import GameShell from "../components/GameShell";
@@ -13,6 +14,7 @@ const GAME_DURATION = 60;
 
 const LetterBridge = () => {
   const { emotion, confidence, videoRef, canvasRef } = useEmotionDetection();
+  const triggerFeedback = useFeedbackEffect();
 
   const [phonicsLevel, setPhonicsLevel] = useState('CVC');
   const [difficulty, setDifficulty]     = useState('easy');
@@ -87,6 +89,7 @@ const LetterBridge = () => {
       setIsValid(valid);
 
       if (valid) {
+        triggerFeedback('correct');
         setFormedWords(prev => {
           if (!prev.includes(word)) {
             setScore(prevScore => prevScore + 10);
@@ -95,6 +98,7 @@ const LetterBridge = () => {
           return prev;
         });
       } else {
+        triggerFeedback('wrong');
         setBlinkingCols(Object.keys(selected).map(Number));
         setTimeout(() => setBlinkingCols([]), 500);
       }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import confetti from "canvas-confetti";
+import useFeedbackEffect from '../hooks/useFeedbackEffect';
 import "./MirrorWordsGame.css";
 import useEmotionDetection from "../hooks/useEmotionDetection";
 import useGameSessionLogger from "../hooks/useGameSessionLogger";
@@ -26,6 +26,7 @@ function renderQuestion(text) {
 
 const MirrorWordsGame = () => {
   const { emotion, confidence, videoRef, canvasRef } = useEmotionDetection();
+  const triggerFeedback = useFeedbackEffect();
   const [level, setLevel] = useState("Easy");
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState(null);
@@ -72,14 +73,11 @@ const MirrorWordsGame = () => {
     }
   }, [current, questions]);
 
-  const fireConfetti = () => {
-    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-  };
-
   const handleSelect = (option) => {
     if (selected) return;
     setSelected(option);
     const isCorrect = option === filteredQuestions[current].correct;
+    triggerFeedback(isCorrect ? 'correct' : 'wrong');
     if (isCorrect) {
       setFeedback("Correct! 🎉");
       const next = scoreRef.current + 10;
@@ -99,7 +97,7 @@ const MirrorWordsGame = () => {
           setFeedback("");
         } else {
           setShowResult(true);
-          fireConfetti();
+          triggerFeedback('correct');
           endSession(scoreRef.current);
         }
       }, 1200);

@@ -6,6 +6,7 @@ import useGameSessionLogger from "../hooks/useGameSessionLogger";
 import TTSButton from "../components/TTSButton";
 import GameShell from "../components/GameShell";
 import FeedbackGif from "../components/FeedbackGif";
+import useFeedbackEffect from '../hooks/useFeedbackEffect';
 import { API_BASE } from '../config/api';
 // const hardcodedWords = {
 //   easy: [
@@ -33,6 +34,7 @@ import { API_BASE } from '../config/api';
 
 export default function SyllableTapGame() {
   const { emotion, confidence, videoRef, canvasRef } = useEmotionDetection();
+  const triggerFeedback = useFeedbackEffect();
   const [difficulty, setDifficulty] = useState('easy');
   const [wordPool, setWordPool] = useState([]);
   const [usedWords, setUsedWords] = useState([]);
@@ -107,9 +109,11 @@ const handleDifficultyChange = (e) => {
   const handleSubmit = () => {
     if (!currentWord) return;
     if (taps === currentWord.syllables) {
+      triggerFeedback('correct');
       setFeedback('✅ Great job!');
       setScore((prev) => prev + 20);
     } else {
+      triggerFeedback('wrong');
       setFeedback(`❌ Oops! It has ${currentWord.syllables} syllables.`);
     }
   };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import confetti from 'canvas-confetti';
+import useFeedbackEffect from '../hooks/useFeedbackEffect';
 import './VerbalMemoryGame.css';
 import useEmotionDetection from '../hooks/useEmotionDetection';
 import useGameSessionLogger from '../hooks/useGameSessionLogger';
@@ -45,6 +45,7 @@ function computeWorkingMemoryScore(maxLen, avgAccuracy) {
 
 export default function VerbalMemoryGame() {
   const { emotion, confidence, videoRef, canvasRef } = useEmotionDetection();
+  const triggerFeedback = useFeedbackEffect();
 
   const [mode,       setMode]       = useState('words');
   const [difficulty, setDifficulty] = useState('easy');
@@ -145,13 +146,14 @@ export default function VerbalMemoryGame() {
 
     if (correct) {
       setScore(s => s + sequence.length * 10);
-      confetti({ particleCount: 50, spread: 50, origin: { y: 0.7 } });
+      triggerFeedback('correct');
       consFailsRef.current = 0;
       setConsecutiveFails(0);
       const next = Math.min(seqLengthRef.current + 1, SEQ_CONFIG[difficulty].max);
       seqLengthRef.current = next;
       setSeqLength(next);
     } else {
+      triggerFeedback('wrong');
       consFailsRef.current += 1;
       setConsecutiveFails(consFailsRef.current);
       if (consFailsRef.current >= 2) {

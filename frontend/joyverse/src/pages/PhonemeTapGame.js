@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import confetti from 'canvas-confetti';
+import useFeedbackEffect from '../hooks/useFeedbackEffect';
 import './PhonemeTapGame.css';
 import useEmotionDetection from '../hooks/useEmotionDetection';
 import useGameSessionLogger from '../hooks/useGameSessionLogger';
@@ -22,6 +22,7 @@ function calcAccuracy(expected, actual) {
 
 export default function PhonemeTapGame() {
   const { emotion, confidence, videoRef, canvasRef } = useEmotionDetection();
+  const triggerFeedback = useFeedbackEffect();
 
   const [phonicsLevel, setPhonicsLevel] = useState('CVC');
   const [difficulty,   setDifficulty]   = useState('easy');
@@ -120,6 +121,7 @@ export default function PhonemeTapGame() {
 
     setWordResults(prev => [...prev, result]);
     if (correct) setScore(s => s + 10);
+    triggerFeedback(correct ? 'correct' : 'wrong');
     setSubmitted(true);
   };
 
@@ -134,7 +136,7 @@ export default function PhonemeTapGame() {
 
       setGameOver(true);
       setSuggestionDismissed(false);
-      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+      triggerFeedback('correct');
 
       const moodAtStart = localStorage.getItem('selectedEmotion') || 'neutral';
       axios.post(`${API_BASE}/api/phoneme-tap`, {

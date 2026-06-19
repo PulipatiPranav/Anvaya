@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import confetti from 'canvas-confetti';
+import useFeedbackEffect from '../hooks/useFeedbackEffect';
 import './LetterSoundGame.css';
 import useEmotionDetection from '../hooks/useEmotionDetection';
 import useGameSessionLogger from '../hooks/useGameSessionLogger';
@@ -19,6 +19,7 @@ function shuffle(arr) {
 
 export default function LetterSoundGame() {
   const { emotion, confidence, videoRef, canvasRef } = useEmotionDetection();
+  const triggerFeedback = useFeedbackEffect();
 
   const [phonicsLevel, setPhonicsLevel] = useState('CVC');
   const [difficulty,   setDifficulty]   = useState('easy');
@@ -102,6 +103,7 @@ export default function LetterSoundGame() {
 
     setSelected(option);
     setResults(prev => [...prev, result]);
+    triggerFeedback(correct ? 'correct' : 'wrong');
 
     if (correct) {
       setScore(s => s + 10);
@@ -127,7 +129,7 @@ export default function LetterSoundGame() {
 
   const finishGame = (allResults) => {
     setGameOver(true);
-    confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+    triggerFeedback('correct');
 
     const total             = allResults.length;
     const correct           = allResults.filter(r => r.correct).length;

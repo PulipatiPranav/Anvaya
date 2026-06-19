@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import confetti from 'canvas-confetti';
+import useFeedbackEffect from '../hooks/useFeedbackEffect';
 import './ConfusableLetterGame.css';
 import useEmotionDetection from '../hooks/useEmotionDetection';
 import useGameSessionLogger from '../hooks/useGameSessionLogger';
@@ -32,6 +32,7 @@ function computePairAccuracy(events) {
 
 export default function ConfusableLetterGame() {
   const { emotion, confidence, videoRef, canvasRef } = useEmotionDetection();
+  const triggerFeedback = useFeedbackEffect();
 
   const [difficulty, setDifficulty] = useState('easy');
   const [focusPair,  setFocusPair]  = useState('all');
@@ -118,6 +119,7 @@ export default function ConfusableLetterGame() {
 
     setSelected(option);
     setEvents(prev => [...prev, event]);
+    triggerFeedback(isCorrect ? 'correct' : 'wrong');
 
     if (isCorrect) {
       setScore(s => s + 10);
@@ -142,7 +144,7 @@ export default function ConfusableLetterGame() {
 
   const finishGame = (allEvents) => {
     setGameOver(true);
-    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+    triggerFeedback('correct');
 
     const total           = allEvents.length;
     const correctCount    = allEvents.filter(e => e.correct).length;

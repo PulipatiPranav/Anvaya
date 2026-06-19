@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./ShapeMemoryGame.css";
 import useEmotionDetection from "../hooks/useEmotionDetection";
+import useFeedbackEffect from '../hooks/useFeedbackEffect';
 import useGameSessionLogger from "../hooks/useGameSessionLogger";
 import GameShell from "../components/GameShell";
 import TTSButton from "../components/TTSButton";
@@ -25,6 +26,7 @@ function shuffleArray(array) {
 
 function ShapeMemoryGame() {
   const { emotion, confidence, videoRef, canvasRef } = useEmotionDetection();
+  const triggerFeedback = useFeedbackEffect();
 
   const [tileValues,    setTileValues]    = useState([]);
   const [revealed,      setRevealed]      = useState([]);
@@ -110,12 +112,14 @@ function ShapeMemoryGame() {
       const updatedCorrect = [...correctTiles];
       updatedCorrect[index] = true;
       setCorrectTiles(updatedCorrect);
+      triggerFeedback('correct');
       setScore(prev => prev + 1);
       if (score + 1 === totalTarget) setIsGameOver(true);
     } else {
       const updatedWrong = [...wrongTiles];
       updatedWrong[index] = true;
       setWrongTiles(updatedWrong);
+      triggerFeedback('wrong');
 
       setClicksLeft(prev => {
         const next = prev - 1;
